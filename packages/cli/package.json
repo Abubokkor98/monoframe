@@ -1,0 +1,26 @@
+{
+  "name": "mononext",
+  "version": "0.0.0",
+  "description": "Scaffold production-ready monorepos",
+  "type": "module",
+  "bin": {
+    "mononext": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "templates"
+  ],
+  "scripts": {
+    "dev": "tsup --watch"
+  },
+  "dependencies": {
+    "commander": "^14.0.3",
+    "execa": "^9.6.1",
+    "fast-glob": "^3.3.3",
+    "fs-extra": "^11.3.4",
+    "ora": "^9.3.0",
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2",
+    "zod": "^4.3.6"
+  }
+}
