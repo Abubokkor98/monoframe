@@ -87,6 +87,8 @@ function buildPackageJson(app: AppConfig, config: ProjectConfig): object {
   const devDependencies: Record<string, string> = {
     '@repo/typescript-config': 'workspace:*',
     '@types/node': LATEST_DEPS['@types/node'],
+    '@types/react': LATEST_DEPS['@types/react'],
+    '@types/react-dom': LATEST_DEPS['@types/react-dom'],
     tailwindcss: LATEST_DEPS.tailwindcss,
   };
 

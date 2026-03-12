@@ -111,29 +111,35 @@ async function moveFilesToUiPackage(firstFrontendAppDir: string, uiDir: string) 
       await fs.remove(libDir);
     }
   }
+
+  // Move components.json → packages/ui/components.json
+  const componentsJsonSrc = path.join(firstFrontendAppDir, 'components.json');
+  const componentsJsonDest = path.join(uiDir, 'components.json');
+
+  if (await fs.pathExists(componentsJsonSrc)) {
+    await fs.move(componentsJsonSrc, componentsJsonDest, { overwrite: true });
+  }
 }
 
-function updateComponentsJson(firstFrontendAppDir: string): Promise<void> {
-  const componentsJsonPath = path.join(firstFrontendAppDir, 'components.json');
+async function updateComponentsJson(uiDir: string): Promise<void> {
+  const componentsJsonPath = path.join(uiDir, 'components.json');
 
-  return fs.pathExists(componentsJsonPath).then(async (exists) => {
-    if (!exists) {
-      return;
-    }
+  if (!(await fs.pathExists(componentsJsonPath))) {
+    return;
+  }
 
-    const config = await fs.readJson(componentsJsonPath);
+  const shadcnConfig = await fs.readJson(componentsJsonPath);
 
-    // Update aliases to point to the shared packages/ui
-    config.aliases = {
-      ...config.aliases,
-      components: '@repo/ui/src',
-      ui: '@repo/ui/src',
-      lib: '@repo/ui/lib',
-      utils: '@repo/ui/lib/utils',
-    };
+  // Update aliases relative to packages/ui
+  shadcnConfig.aliases = {
+    ...shadcnConfig.aliases,
+    components: './src',
+    ui: './src',
+    lib: './lib',
+    utils: './lib/utils',
+  };
 
-    await fs.writeJson(componentsJsonPath, config, { spaces: 2 });
-  });
+  await fs.writeJson(componentsJsonPath, shadcnConfig, { spaces: 2 });
 }
 
 export async function generateShadcnSetup(config: ProjectConfig, targetDir: string) {
@@ -163,11 +169,11 @@ export async function generateShadcnSetup(config: ProjectConfig, targetDir: stri
   const shadcnSucceeded = await runShadcnInit(firstFrontendAppDir, config);
 
   if (shadcnSucceeded) {
-    // 3. Move generated files to packages/ui
+    // 3. Move generated files + components.json to packages/ui
     await moveFilesToUiPackage(firstFrontendAppDir, uiDir);
 
-    // 4. Update components.json aliases for monorepo
-    await updateComponentsJson(firstFrontendAppDir);
+    // 4. Update components.json aliases (now in packages/ui)
+    await updateComponentsJson(uiDir);
   } else {
     // Fallback: write cn() utility manually so packages/ui is still usable
     await writeFile(path.join(uiDir, 'lib', 'utils.ts'), CN_UTILS);

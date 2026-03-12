@@ -31,4 +31,6 @@ export const LATEST_DEPS = {
   '@types/express': 'latest',
   '@types/cors': 'latest',
   '@types/node': 'latest',
+  '@types/react': 'latest',
+  '@types/react-dom': 'latest',
 } as const;
