@@ -39,6 +39,10 @@ function buildUiPackageJson(): object {
     devDependencies: {
       '@repo/typescript-config': 'workspace:*',
     },
+    peerDependencies: {
+      react: '>=18',
+      'react-dom': '>=18',
+    },
   };
 }
 
@@ -95,7 +99,13 @@ async function moveFilesToUiPackage(firstFrontendAppDir: string, uiDir: string) 
         { overwrite: true },
       );
     }
-    await fs.remove(path.join(firstFrontendAppDir, 'components'));
+    await fs.remove(componentsUiDir);
+    // Clean up empty components dir
+    const componentsDir = path.join(firstFrontendAppDir, 'components');
+    const remaining = await fs.readdir(componentsDir).catch(() => [] as string[]);
+    if (remaining.length === 0) {
+      await fs.remove(componentsDir);
+    }
   }
 
   // Move lib/utils.ts → packages/ui/lib/utils.ts
@@ -189,16 +199,6 @@ export async function generateShadcnSetup(config: ProjectConfig, targetDir: stri
         ...pkg.dependencies,
         '@repo/ui': 'workspace:*',
       };
-
-      // Add shadcn peer deps if init succeeded
-      if (shadcnSucceeded) {
-        pkg.dependencies = {
-          ...pkg.dependencies,
-          clsx: 'latest',
-          'tailwind-merge': 'latest',
-          'tw-animate-css': 'latest',
-        };
-      }
 
       await fs.writeJson(appPkgPath, pkg, { spaces: 2 });
     }
