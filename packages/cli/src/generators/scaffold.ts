@@ -9,6 +9,8 @@ import { generateFrontendApps } from './frontend-app.js';
 import { generateBackendApps } from './backend-app.js';
 import { generateShadcnSetup } from './shadcn-setup.js';
 import { generateAnimations } from './animations.js';
+import { generateExtras } from './extras.js';
+import { generateFinalize } from './finalize.js';
 
 export async function scaffold(config: ProjectConfig) {
   const targetDir = path.resolve(process.cwd(), config.projectName);
@@ -46,6 +48,12 @@ export async function scaffold(config: ProjectConfig) {
 
     // 6. Animation libraries (if selected)
     await generateAnimations(config, targetDir);
+
+    // 7. Husky + lint-staged (if selected)
+    await generateExtras(config, targetDir);
+
+    // 8. Git init + .gitignore + README
+    await generateFinalize(config, targetDir);
   } catch (error) {
     if (createdTargetDir) {
       await fs.remove(targetDir);
