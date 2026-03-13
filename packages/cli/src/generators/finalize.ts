@@ -140,7 +140,7 @@ ${devFilterExamples}
 \`\`\`
 ${config.projectName}/
 ├── apps/
-${config.apps.map((app) => `│   └── ${app.name}/`).join('\n')}
+${config.apps.map((app, i) => `│   ${i === config.apps.length - 1 ? '└' : '├'}── ${app.name}/`).join('\n')}
 ├── packages/
 │   ├── ui/                   ← Shared UI components
 │   ├── config-typescript/    ← Shared TypeScript config

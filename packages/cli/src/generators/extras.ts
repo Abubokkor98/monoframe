@@ -19,7 +19,8 @@ function buildLintStagedConfig(codeQuality: ProjectConfig['codeQuality']): objec
   };
 }
 
-const PRE_COMMIT_HOOK = `npx --no-install lint-staged
+const PRE_COMMIT_HOOK = `#!/bin/sh
+npx --no-install lint-staged
 `;
 
 async function runHuskyInit(targetDir: string): Promise<boolean> {
