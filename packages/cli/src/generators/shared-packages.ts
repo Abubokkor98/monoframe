@@ -1,5 +1,6 @@
 import { ProjectConfig } from '../types/config.js';
 import { copyTemplate, ensureDir, writeJson } from '../utils/file-system.js';
+import { LATEST_DEPS } from '../constants/versions.js';
 import path from 'path';
 
 export async function generateSharedPackages(config: ProjectConfig, targetDir: string) {
@@ -30,7 +31,7 @@ export async function generateSharedPackages(config: ProjectConfig, targetDir: s
       type: 'module',
       license: 'MIT',
       dependencies: {
-        eslint: '^9',
+        eslint: LATEST_DEPS.eslint,
         '@eslint/js': '^9',
         '@eslint/eslintrc': '^3',
         'typescript-eslint': '^8',
