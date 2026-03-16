@@ -1,4 +1,5 @@
 import Conf from 'conf';
+import { ProjectConfig } from '../types/config.js';
 import { logger } from './logger.js';
 
 interface SavedPreferences {
@@ -12,8 +13,32 @@ interface SavedPreferences {
   featureGithubActions: boolean;
 }
 
+const PREFERENCES_SCHEMA = {
+  codeQuality: { type: 'string', enum: ['eslint-prettier', 'biome'] },
+  shadcnEnabled: { type: 'boolean' },
+  shadcnBase: { type: 'string' },
+  shadcnPreset: { type: 'string' },
+  animations: { type: 'array', items: { type: 'string' } },
+  featureHusky: { type: 'boolean' },
+  featurePlaywright: { type: 'boolean' },
+  featureGithubActions: { type: 'boolean' },
+} as const;
+
+const PREFERENCES_DEFAULTS: SavedPreferences = {
+  codeQuality: 'eslint-prettier',
+  shadcnEnabled: true,
+  shadcnBase: 'radix',
+  shadcnPreset: 'nova',
+  animations: [],
+  featureHusky: false,
+  featurePlaywright: false,
+  featureGithubActions: false,
+};
+
 const preferences = new Conf<SavedPreferences>({
   projectName: 'mononext',
+  schema: PREFERENCES_SCHEMA,
+  defaults: PREFERENCES_DEFAULTS,
 });
 
 /**
@@ -30,19 +55,16 @@ export function getPreference<K extends keyof SavedPreferences>(
   }
 }
 
+type PreferencesInput = Pick<ProjectConfig, 'codeQuality' | 'shadcn' | 'animations' | 'features'>;
+
 /**
  * Save user choices after a successful scaffold.
  * Warns on failure — the project was created successfully,
  * but preferences won't be remembered next time.
  */
-export function saveAllPreferences(config: {
-  codeQuality: string;
-  shadcn: { enabled: boolean; base: string; preset: string };
-  animations: string[];
-  features: { husky: boolean; playwright: boolean; githubActions: boolean };
-}): void {
+export function saveAllPreferences(config: PreferencesInput): void {
   try {
-    preferences.set('codeQuality', config.codeQuality as SavedPreferences['codeQuality']);
+    preferences.set('codeQuality', config.codeQuality);
     preferences.set('shadcnEnabled', config.shadcn.enabled);
     preferences.set('shadcnBase', config.shadcn.base);
     preferences.set('shadcnPreset', config.shadcn.preset);
@@ -59,10 +81,12 @@ export function saveAllPreferences(config: {
  * Clear all saved preferences.
  * Warns on failure — user explicitly asked to reset but it didn't work.
  */
-export function clearPreferences(): void {
+export function clearPreferences(): boolean {
   try {
     preferences.clear();
+    return true;
   } catch {
     logger.warn('Could not clear preferences. Try manually deleting the config file.');
+    return false;
   }
 }

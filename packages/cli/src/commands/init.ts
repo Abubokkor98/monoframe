@@ -18,8 +18,10 @@ interface InitOptions {
 export async function init(options: InitOptions) {
   try {
     if (options.resetPreferences) {
-      clearPreferences();
-      logger.info('Preferences cleared.');
+      const cleared = clearPreferences();
+      if (cleared) {
+        logger.info('Preferences cleared.');
+      }
     }
 
     let config: ProjectConfig;
