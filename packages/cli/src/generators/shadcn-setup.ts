@@ -31,6 +31,7 @@ function buildUiPackageJson(): object {
       '.': './src/index.ts',
       './src/*': './src/*',
       './lib/*': './lib/*',
+      './hooks/*': './hooks/*',
     },
     dependencies: {
       clsx: 'latest',
@@ -53,7 +54,7 @@ function buildUiTsconfig(): object {
     compilerOptions: {
       outDir: 'dist',
     },
-    include: ['src', 'lib'],
+    include: ['src', 'lib', 'hooks'],
     exclude: ['node_modules', 'dist'],
   };
 }
@@ -62,7 +63,9 @@ async function runShadcnInit(
   firstFrontendAppDir: string,
   config: ProjectConfig,
 ): Promise<boolean> {
-  const preset = PRESET_MAP[config.shadcn.preset] ?? 'nova';
+  const preset = config.shadcn.preset === 'custom'
+    ? config.shadcn.customPresetCode ?? 'nova'
+    : PRESET_MAP[config.shadcn.preset] ?? 'nova';
 
   const loadingSpinner = spinner('Running shadcn init...');
 
@@ -86,22 +89,55 @@ async function runShadcnInit(
   }
 }
 
+/**
+ * Read the style and iconLibrary from shadcn-generated components.json
+ * so our custom components.json preserves these values.
+ */
+async function readShadcnGeneratedConfig(
+  componentsJsonPath: string,
+): Promise<{ style: string; iconLibrary: string; baseColor: string }> {
+  const defaults = { style: 'radix-nova', iconLibrary: 'lucide', baseColor: 'neutral' };
+
+  if (!(await fs.pathExists(componentsJsonPath))) {
+    return defaults;
+  }
+
+  try {
+    const config = await fs.readJson(componentsJsonPath);
+    return {
+      style: config.style ?? defaults.style,
+      iconLibrary: config.iconLibrary ?? defaults.iconLibrary,
+      baseColor: config.tailwind?.baseColor ?? defaults.baseColor,
+    };
+  } catch {
+    return defaults;
+  }
+}
+
+/**
+ * Move shadcn-generated files from the first frontend app to packages/ui.
+ * - components/ui/* → packages/ui/src/components/
+ * - lib/utils.ts → packages/ui/lib/utils.ts
+ * - globals.css related styles stay in the app
+ * - components.json is read then deleted (we write our own)
+ */
 async function moveFilesToUiPackage(firstFrontendAppDir: string, uiDir: string) {
-  // Move components/ui → packages/ui/src
+  // Move components/ui → packages/ui/src/components
   const componentsUiDir = path.join(firstFrontendAppDir, 'components', 'ui');
-  const uiSrcDir = path.join(uiDir, 'src');
+  const uiComponentsDir = path.join(uiDir, 'src', 'components');
 
   if (await fs.pathExists(componentsUiDir)) {
     const files = await fs.readdir(componentsUiDir);
     for (const file of files) {
       await fs.move(
         path.join(componentsUiDir, file),
-        path.join(uiSrcDir, file),
+        path.join(uiComponentsDir, file),
         { overwrite: true },
       );
     }
     await fs.remove(componentsUiDir);
-    // Clean up empty components dir
+
+    // Clean up empty components dir in the app
     const componentsDir = path.join(firstFrontendAppDir, 'components');
     const remaining = await fs.readdir(componentsDir).catch(() => [] as string[]);
     if (remaining.length === 0) {
@@ -115,6 +151,7 @@ async function moveFilesToUiPackage(firstFrontendAppDir: string, uiDir: string) 
 
   if (await fs.pathExists(libUtilsSrc)) {
     await fs.move(libUtilsSrc, libUtilsDest, { overwrite: true });
+
     // Clean up empty lib dir in the app
     const libDir = path.join(firstFrontendAppDir, 'lib');
     const remaining = await fs.readdir(libDir);
@@ -123,34 +160,40 @@ async function moveFilesToUiPackage(firstFrontendAppDir: string, uiDir: string) 
     }
   }
 
-  // Move components.json → packages/ui/components.json
+  // Delete components.json from the app (we write our own in packages/ui)
   const componentsJsonSrc = path.join(firstFrontendAppDir, 'components.json');
-  const componentsJsonDest = path.join(uiDir, 'components.json');
-
   if (await fs.pathExists(componentsJsonSrc)) {
-    await fs.move(componentsJsonSrc, componentsJsonDest, { overwrite: true });
+    await fs.remove(componentsJsonSrc);
   }
 }
 
-async function updateComponentsJson(uiDir: string): Promise<void> {
-  const componentsJsonPath = path.join(uiDir, 'components.json');
-
-  if (!(await fs.pathExists(componentsJsonPath))) {
-    return;
-  }
-
-  const shadcnConfig = await fs.readJson(componentsJsonPath);
-
-  // Update aliases relative to packages/ui
-  shadcnConfig.aliases = {
-    ...shadcnConfig.aliases,
-    components: './src',
-    ui: './src',
-    lib: './lib',
-    utils: './lib/utils',
+/**
+ * Write the monorepo-optimized components.json to packages/ui.
+ * Uses separate aliases for ui (primitives) and components (blocks).
+ */
+function buildUiComponentsJson(
+  generatedConfig: { style: string; iconLibrary: string; baseColor: string },
+): object {
+  return {
+    $schema: 'https://ui.shadcn.com/schema.json',
+    style: generatedConfig.style,
+    rsc: true,
+    tsx: true,
+    tailwind: {
+      config: '',
+      css: 'src/styles/globals.css',
+      baseColor: generatedConfig.baseColor,
+      cssVariables: true,
+    },
+    iconLibrary: generatedConfig.iconLibrary,
+    aliases: {
+      ui: './src/components',
+      components: './src/blocks',
+      hooks: './hooks',
+      lib: './lib',
+      utils: './lib/utils',
+    },
   };
-
-  await fs.writeJson(componentsJsonPath, shadcnConfig, { spaces: 2 });
 }
 
 export async function generateShadcnSetup(config: ProjectConfig, targetDir: string) {
@@ -168,8 +211,11 @@ export async function generateShadcnSetup(config: ProjectConfig, targetDir: stri
   const firstFrontendAppDir = path.join(targetDir, 'apps', firstFrontendApp.name);
   const uiDir = path.join(targetDir, 'packages', 'ui');
 
-  // 1. Create packages/ui structure
-  await ensureDir(path.join(uiDir, 'src'));
+  // 1. Create packages/ui structure with separate folders
+  await ensureDir(path.join(uiDir, 'src', 'components'));
+  await ensureDir(path.join(uiDir, 'src', 'blocks'));
+  await ensureDir(path.join(uiDir, 'src', 'styles'));
+  await ensureDir(path.join(uiDir, 'hooks'));
   await ensureDir(path.join(uiDir, 'lib'));
 
   await writeJson(path.join(uiDir, 'package.json'), buildUiPackageJson());
@@ -180,17 +226,30 @@ export async function generateShadcnSetup(config: ProjectConfig, targetDir: stri
   const shadcnSucceeded = await runShadcnInit(firstFrontendAppDir, config);
 
   if (shadcnSucceeded) {
-    // 3. Move generated files + components.json to packages/ui
+    // 3. Read style/iconLibrary from generated config before we delete it
+    const componentsJsonPath = path.join(firstFrontendAppDir, 'components.json');
+    const generatedConfig = await readShadcnGeneratedConfig(componentsJsonPath);
+
+    // 4. Move generated files to packages/ui (deletes components.json from app)
     await moveFilesToUiPackage(firstFrontendAppDir, uiDir);
 
-    // 4. Update components.json aliases (now in packages/ui)
-    await updateComponentsJson(uiDir);
+    // 5. Write our monorepo-optimized components.json
+    await writeJson(
+      path.join(uiDir, 'components.json'),
+      buildUiComponentsJson(generatedConfig),
+    );
   } else {
     // Fallback: write cn() utility manually so packages/ui is still usable
     await writeFile(path.join(uiDir, 'lib', 'utils.ts'), CN_UTILS);
+
+    // Write a default components.json even on failure for future shadcn add
+    await writeJson(
+      path.join(uiDir, 'components.json'),
+      buildUiComponentsJson({ style: 'radix-nova', iconLibrary: 'lucide', baseColor: 'neutral' }),
+    );
   }
 
-  // 5. Add @repo/ui dependency to all frontend apps
+  // 6. Add @repo/ui dependency to all frontend apps
   for (const app of frontendApps) {
     const appPkgPath = path.join(targetDir, 'apps', app.name, 'package.json');
 

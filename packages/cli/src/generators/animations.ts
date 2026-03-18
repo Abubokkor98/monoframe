@@ -235,7 +235,7 @@ export async function generateAnimations(config: ProjectConfig, targetDir: strin
     return;
   }
 
-  const uiSrcDir = path.join(targetDir, 'packages', 'ui', 'src');
+  const uiSrcDir = path.join(targetDir, 'packages', 'ui', 'src', 'components');
   await ensureDir(uiSrcDir);
 
   // 1. Write shared components to packages/ui/src/
