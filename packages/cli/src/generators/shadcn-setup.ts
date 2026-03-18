@@ -1,4 +1,4 @@
-import { ProjectConfig } from '../types/config.js';
+import { AppConfig, ProjectConfig } from '../types/config.js';
 import { ensureDir, writeJson, writeFile } from '../utils/file-system.js';
 import { spinner } from '../utils/logger.js';
 import path from 'path';
@@ -90,13 +90,29 @@ async function runShadcnInit(
 }
 
 /**
+ * Derive the expected shadcn style string from user config.
+ * Format: {base}-{preset} (e.g., 'radix-nova', 'base-vega').
+ */
+function deriveFallbackStyle(shadcnConfig: ProjectConfig['shadcn']): string {
+  const preset = shadcnConfig.preset === 'custom'
+    ? shadcnConfig.customPresetCode ?? 'nova'
+    : shadcnConfig.preset;
+  return `${shadcnConfig.base}-${preset}`;
+}
+
+/**
  * Read the style and iconLibrary from shadcn-generated components.json
  * so our custom components.json preserves these values.
  */
 async function readShadcnGeneratedConfig(
   componentsJsonPath: string,
+  shadcnConfig: ProjectConfig['shadcn'],
 ): Promise<{ style: string; iconLibrary: string; baseColor: string }> {
-  const defaults = { style: 'radix-nova', iconLibrary: 'lucide', baseColor: 'neutral' };
+  const defaults = {
+    style: deriveFallbackStyle(shadcnConfig),
+    iconLibrary: 'lucide',
+    baseColor: 'neutral',
+  };
 
   if (!(await fs.pathExists(componentsJsonPath))) {
     return defaults;
@@ -118,7 +134,7 @@ async function readShadcnGeneratedConfig(
  * Move shadcn-generated files from the first frontend app to packages/ui.
  * - components/ui/* → packages/ui/src/components/
  * - lib/utils.ts → packages/ui/lib/utils.ts
- * - globals.css related styles stay in the app
+ * - globals.css → packages/ui/src/styles/globals.css (shared design tokens)
  * - components.json is read then deleted (we write our own)
  */
 async function moveFilesToUiPackage(firstFrontendAppDir: string, uiDir: string) {
@@ -160,10 +176,58 @@ async function moveFilesToUiPackage(firstFrontendAppDir: string, uiDir: string) 
     }
   }
 
+  // Move globals.css → packages/ui/src/styles/globals.css (shared design tokens)
+  const globalsCssSrc = path.join(firstFrontendAppDir, 'app', 'globals.css');
+  const globalsCssDest = path.join(uiDir, 'src', 'styles', 'globals.css');
+
+  if (await fs.pathExists(globalsCssSrc)) {
+    await fs.move(globalsCssSrc, globalsCssDest, { overwrite: true });
+  }
+
   // Delete components.json from the app (we write our own in packages/ui)
   const componentsJsonSrc = path.join(firstFrontendAppDir, 'components.json');
   if (await fs.pathExists(componentsJsonSrc)) {
     await fs.remove(componentsJsonSrc);
+  }
+}
+
+/**
+ * Write each frontend app's globals.css to import the shared design tokens.
+ * Apps can add overrides below the import for per-app theming.
+ */
+async function writeAppGlobalsCss(targetDir: string, frontendApps: AppConfig[]) {
+  for (const app of frontendApps) {
+    const sharedImport = `/*
+ * Shared design tokens from @repo/ui (colors, radius, fonts, etc.)
+ * All frontend apps import this — changes here affect every app.
+ * Source: packages/ui/src/styles/globals.css
+ */
+@import '@repo/ui/src/styles/globals.css';
+
+/*
+ * App-specific overrides for "${app.name}"
+ *
+ * Want different colors for this app? Override CSS variables below.
+ * Only the variables you set here will change — everything else
+ * stays from the shared design tokens above.
+ *
+ * Example — give this app a custom primary color:
+ *
+ *   :root {
+ *     --primary: oklch(0.6 0.2 150);
+ *     --primary-foreground: oklch(0.985 0 0);
+ *   }
+ *
+ *   .dark {
+ *     --primary: oklch(0.7 0.15 150);
+ *   }
+ *
+ * Browse themes: https://ui.shadcn.com/themes
+ */
+`;
+
+    const appGlobalsCss = path.join(targetDir, 'apps', app.name, 'app', 'globals.css');
+    await writeFile(appGlobalsCss, sharedImport);
   }
 }
 
@@ -222,7 +286,7 @@ export async function generateShadcnSetup(config: ProjectConfig, targetDir: stri
   await writeJson(path.join(uiDir, 'package.json'), buildUiPackageJson());
   await writeJson(path.join(uiDir, 'tsconfig.json'), buildUiTsconfig());
   await writeFile(path.join(uiDir, 'src', 'index.ts'), '// Export your UI components here\n');
-  await writeFile(path.join(uiDir, 'src', 'styles', 'globals.css'), '/* Global styles */\n');
+  // Note: globals.css in src/styles/ will be populated by shadcn init (moved from first app)
 
   // 2. Try running shadcn init programmatically
   const shadcnSucceeded = await runShadcnInit(firstFrontendAppDir, config);
@@ -230,9 +294,9 @@ export async function generateShadcnSetup(config: ProjectConfig, targetDir: stri
   if (shadcnSucceeded) {
     // 3. Read style/iconLibrary from generated config before we delete it
     const componentsJsonPath = path.join(firstFrontendAppDir, 'components.json');
-    const generatedConfig = await readShadcnGeneratedConfig(componentsJsonPath);
+    const generatedConfig = await readShadcnGeneratedConfig(componentsJsonPath, config.shadcn);
 
-    // 4. Move generated files to packages/ui (deletes components.json from app)
+    // 4. Move generated files + globals.css to packages/ui
     await moveFilesToUiPackage(firstFrontendAppDir, uiDir);
 
     // 5. Write our monorepo-optimized components.json
@@ -244,14 +308,27 @@ export async function generateShadcnSetup(config: ProjectConfig, targetDir: stri
     // Fallback: write cn() utility manually so packages/ui is still usable
     await writeFile(path.join(uiDir, 'lib', 'utils.ts'), CN_UTILS);
 
+    // Write a minimal shared globals.css on failure
+    await writeFile(
+      path.join(uiDir, 'src', 'styles', 'globals.css'),
+      "@import 'tailwindcss';\n@import 'tw-animate-css';\n",
+    );
+
     // Write a default components.json even on failure for future shadcn add
     await writeJson(
       path.join(uiDir, 'components.json'),
-      buildUiComponentsJson({ style: 'radix-nova', iconLibrary: 'lucide', baseColor: 'neutral' }),
+      buildUiComponentsJson({
+        style: deriveFallbackStyle(config.shadcn),
+        iconLibrary: 'lucide',
+        baseColor: 'neutral',
+      }),
     );
   }
 
-  // 6. Add @repo/ui dependency to all frontend apps
+  // 6. Write each app's globals.css to import shared design tokens
+  await writeAppGlobalsCss(targetDir, frontendApps);
+
+  // 7. Add @repo/ui dependency to all frontend apps
   for (const app of frontendApps) {
     const appPkgPath = path.join(targetDir, 'apps', app.name, 'package.json');
 

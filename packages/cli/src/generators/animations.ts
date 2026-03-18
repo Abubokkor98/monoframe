@@ -197,6 +197,32 @@ async function addAnimationDeps(packageJsonPath: string, config: ProjectConfig) 
   }
 }
 
+async function addUiPeerDeps(uiPackageJsonPath: string, config: ProjectConfig) {
+  if (!(await fs.pathExists(uiPackageJsonPath))) {
+    return;
+  }
+
+  const pkg = await fs.readJson(uiPackageJsonPath);
+  const peerDeps: Record<string, string> = {};
+
+  if (config.animations.includes('framer-motion')) {
+    peerDeps['framer-motion'] = '>=10';
+  }
+
+  if (config.animations.includes('lenis')) {
+    peerDeps.lenis = '>=1';
+  }
+
+  if (config.animations.includes('gsap')) {
+    peerDeps.gsap = '>=3';
+  }
+
+  if (Object.keys(peerDeps).length > 0) {
+    pkg.peerDependencies = { ...pkg.peerDependencies, ...peerDeps };
+    await fs.writeJson(uiPackageJsonPath, pkg, { spaces: 2 });
+  }
+}
+
 async function updateProviderBarrelExports(config: ProjectConfig, providersDir: string) {
   const indexPath = path.join(providersDir, 'index.ts');
 
@@ -256,6 +282,9 @@ export async function generateAnimations(config: ProjectConfig, targetDir: strin
     await fs.writeFile(mainIndexPath, mainIndexContent.trimEnd() + '\n' + reExportLine + '\n');
   }
 
-  // 5. Wire into each frontend app (template.tsx, layout.tsx mods, deps)
+  // 5. Declare animation libs as peerDependencies on @repo/ui
+  await addUiPeerDeps(path.join(targetDir, 'packages', 'ui', 'package.json'), config);
+
+  // 6. Wire into each frontend app (template.tsx, layout.tsx mods, deps)
   await wireFrontendApps(config, targetDir);
 }

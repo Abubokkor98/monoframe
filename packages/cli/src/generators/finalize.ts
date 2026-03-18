@@ -70,7 +70,19 @@ pnpm ui:add login-01
 
 Components go to \`packages/ui/src/components/\`.
 Blocks go to \`packages/ui/src/blocks/\`.
-All frontend apps import from \`@repo/ui\`.
+
+### Importing
+
+\`\`\`tsx
+// Import a component
+import { Button } from '@repo/ui/src/components/button';
+
+// Import a block
+import { LoginForm } from '@repo/ui/src/blocks/login-form';
+
+// Import a utility
+import { cn } from '@repo/ui/lib/utils';
+\`\`\`
 `;
   }
 
