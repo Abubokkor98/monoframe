@@ -1,0 +1,61 @@
+---
+title: Backend Support
+description: Express + TypeScript backend apps with hot-reload.
+---
+
+# Backend Support
+
+Monoframe generates Express + TypeScript backends that integrate seamlessly with the monorepo.
+
+## What You Get
+
+Each backend app includes:
+
+- **Express** web server
+- **TypeScript** with shared config from `@repo/typescript-config`
+- **tsx** for hot-reload during development
+- Proper `build` and `dev` scripts
+- Port configuration to avoid conflicts with frontend apps
+
+## Project Structure
+
+```
+apps/api/
+├── src/
+│   └── index.ts          # Express server entry point
+├── package.json
+└── tsconfig.json         # Extends @repo/typescript-config
+```
+
+## Development
+
+```bash
+pnpm dev  # Starts all apps including backends
+```
+
+Backend apps run on port `4000` by default (incrementing for additional backends).
+
+## Entry Point
+
+The generated `src/index.ts`:
+
+```typescript
+import express from 'express';
+
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.json({ message: 'API is running' });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+```
+
+## Multiple Backends
+
+You can create multiple backend apps during setup. Each gets its own port, directory, and configuration — all sharing the same TypeScript and ESLint configs.

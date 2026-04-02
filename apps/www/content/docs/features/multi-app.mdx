@@ -1,0 +1,66 @@
+---
+title: Multi-App Support
+description: Create multiple frontend and backend apps in a single monorepo.
+---
+
+# Multi-App Support
+
+Monoframe lets you create up to **5 apps** in a single monorepo, each configured with the right tooling for its type.
+
+## How It Works
+
+During setup, you specify how many apps you want and configure each one:
+
+```
+◆  How many apps do you want to create?
+│  3
+│
+◆  App 1 — Name: web
+◆  App 1 — Type: Frontend
+│
+◆  App 2 — Name: admin
+◆  App 2 — Type: Frontend
+│
+◆  App 3 — Name: api
+◆  App 3 — Type: Backend
+```
+
+## Frontend Apps
+
+Each frontend app gets:
+
+- **Next.js** with App Router and TypeScript
+- **Tailwind CSS v4** with shared config
+- **`@repo/ui`** dependency for shared components
+- Proper `transpilePackages` config for monorepo imports
+- Unique dev server port
+
+## Backend Apps
+
+Each backend app gets:
+
+- **Express** with TypeScript
+- **tsx** for hot-reload during development
+- Shared TypeScript config from `@repo/typescript-config`
+- Proper build scripts
+
+## Shared Packages
+
+All apps share these packages:
+
+| Package | Purpose |
+|---------|---------|
+| `@repo/ui` | shadcn/ui components, animation providers |
+| `@repo/eslint-config` | Shared ESLint rules |
+| `@repo/typescript-config` | Shared `tsconfig.json` presets |
+| `@repo/tailwind-config` | Shared Tailwind CSS configuration |
+
+## Pipeline
+
+Turborepo runs tasks in parallel with proper dependency ordering:
+
+```bash
+pnpm dev    # Starts ALL apps in parallel
+pnpm build  # Builds in dependency order
+pnpm lint   # Lints all packages
+```

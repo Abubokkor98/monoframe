@@ -1,0 +1,58 @@
+---
+title: Installation
+description: System requirements and installation methods for Monoframe.
+---
+
+# Installation
+
+## System Requirements
+
+| Requirement | Minimum Version |
+|-------------|----------------|
+| Node.js     | 18.0+          |
+| pnpm        | 8.0+           |
+| Git         | 2.0+           |
+| OS          | Windows, macOS, Linux |
+
+## Install via npx (Recommended)
+
+No global installation needed. Run directly:
+
+```bash
+npx monoframe init
+```
+
+This always uses the latest version from npm.
+
+## Global Installation
+
+If you prefer a global install:
+
+```bash
+npm install -g monoframe
+```
+
+Then run:
+
+```bash
+monoframe init
+```
+
+## Verify Installation
+
+```bash
+monoframe --version
+monoframe --help
+```
+
+## Package Manager
+
+Monoframe generates projects using **pnpm** workspaces. Make sure pnpm is installed:
+
+```bash
+npm install -g pnpm
+```
+
+<Callout type="info">
+  Why pnpm? It's faster, uses less disk space via hard links, and has strict dependency isolation — ideal for monorepos.
+</Callout>

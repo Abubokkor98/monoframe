@@ -1,3 +1,175 @@
 @import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/shadcn.css';
 @import 'fumadocs-ui/css/preset.css';
+
+/* ── Monoframe Theme ── */
+/* Exact Redis.io dark palette: teal-midnight bg, red CTAs, lime-yellow highlights */
+/* Single theme — no light/dark toggle */
+
+@theme {
+  /* Redis Brand Colors */
+  --color-brand-red: #ff4438;
+  --color-brand-red-light: #ff6259;
+  --color-brand-lime: #dcff1e;
+  --color-brand-lime-dark: #091a23;
+
+  /* Midnight backgrounds (from Redis.io) */
+  --color-midnight: #091a23;
+  --color-dusk-deep: #0d212c;
+  --color-dusk: #163341;
+  --color-dusk-light: #1e3f50;
+
+  /* Borders & strokes */
+  --color-stroke: #2d4754;
+  --color-stroke-light: #3a5564;
+
+  /* Text */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b9c2c6;
+  --color-text-muted: #7a8f99;
+
+  /* Typography */
+  --font-sans: var(--font-space-grotesk), 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-space-mono), 'Space Mono', ui-monospace, monospace;
+}
+
+/* ── Single Dark Theme — no toggle ── */
+:root {
+  color-scheme: dark;
+
+  --background: var(--color-midnight);
+  --foreground: var(--color-text-primary);
+
+  --primary: var(--color-brand-red);
+  --primary-foreground: #ffffff;
+
+  --muted: var(--color-dusk);
+  --muted-foreground: var(--color-text-secondary);
+
+  --card: var(--color-dusk-deep);
+  --card-foreground: var(--color-text-primary);
+
+  --border: var(--color-stroke);
+  --input: var(--color-dusk);
+  --ring: var(--color-brand-red);
+  --radius: 0.625rem;
+
+  /* Fumadocs overrides — all dark, no light variant needed */
+  --color-fd-background: var(--color-midnight);
+  --color-fd-foreground: var(--color-text-primary);
+  --color-fd-muted: var(--color-dusk);
+  --color-fd-muted-foreground: var(--color-text-secondary);
+  --color-fd-card: var(--color-dusk-deep);
+  --color-fd-card-foreground: var(--color-text-primary);
+  --color-fd-border: var(--color-stroke);
+  --color-fd-primary: var(--color-brand-red);
+  --color-fd-primary-foreground: #ffffff;
+  --color-fd-accent: var(--color-dusk);
+  --color-fd-accent-foreground: var(--color-text-primary);
+  --color-fd-ring: var(--color-brand-red);
+  --color-fd-popover: var(--color-dusk-deep);
+  --color-fd-popover-foreground: var(--color-text-primary);
+  --color-fd-secondary: var(--color-dusk);
+  --color-fd-secondary-foreground: var(--color-text-primary);
+}
+
+/* Force dark class to match root — prevents any accidental light switch */
+.dark, .light, [data-theme="dark"], [data-theme="light"] {
+  --background: var(--color-midnight);
+  --foreground: var(--color-text-primary);
+  --card: var(--color-dusk-deep);
+  --muted: var(--color-dusk);
+  --border: var(--color-stroke);
+  --color-fd-background: var(--color-midnight);
+  --color-fd-foreground: var(--color-text-primary);
+  --color-fd-card: var(--color-dusk-deep);
+  --color-fd-muted: var(--color-dusk);
+  --color-fd-border: var(--color-stroke);
+}
+
+/* ── Global ── */
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--color-midnight);
+  color: var(--color-text-primary);
+}
+
+/* Highlighted text — lime-yellow accent for section titles */
+.text-highlight {
+  color: var(--color-brand-lime);
+}
+
+/* ── Navbar — white links like Redis.io ── */
+nav a,
+nav button {
+  color: var(--color-text-primary) !important;
+}
+
+nav a:hover {
+  color: var(--color-text-secondary) !important;
+}
+
+/* ── Navbar padding ── */
+#nd-nav nav {
+  padding-inline: 0rem;
+}
+
+/* Card glow effect */
+.card-glow {
+  position: relative;
+}
+
+.card-glow::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    #ff443818,
+    transparent 50%,
+    #ff443808
+  );
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-glow:hover::before {
+  opacity: 1;
+}
+
+/* ── Hide Fumadocs theme toggle ── */
+[data-theme-toggle],
+button[aria-label="Toggle Theme"],
+button[aria-label="Toggle theme"] {
+  display: none !important;
+}
+
+/* ── Terminal scrollbar ── */
+.terminal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #1e3a4a transparent;
+}
+
+.terminal-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.terminal-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.terminal-scrollbar::-webkit-scrollbar-thumb {
+  background: #1e3a4a;
+  border-radius: 3px;
+}
+
+.terminal-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #2a5060;
+}

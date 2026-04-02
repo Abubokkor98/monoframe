@@ -1,0 +1,46 @@
+---
+title: Deployment
+description: Deploy your Monoframe project to Vercel and other platforms.
+---
+
+# Deployment
+
+## Vercel (Recommended)
+
+Vercel has first-class Turborepo support. Each app in your monorepo can be deployed as a separate Vercel project.
+
+### Steps
+
+1. Push your project to GitHub
+2. Go to [vercel.com/new](https://vercel.com/new)
+3. Import your repository
+4. Set the **Root Directory** to `apps/web` (or whichever app you're deploying)
+5. Vercel auto-detects Next.js and configures the build
+
+### Deploy Multiple Apps
+
+For each frontend app, create a separate Vercel project pointing to the same repo but with a different root directory:
+
+| Vercel Project | Root Directory |
+|---------------|---------------|
+| my-app-web    | `apps/web`    |
+| my-app-admin  | `apps/admin`  |
+
+Vercel automatically uses Turborepo's remote caching for faster builds.
+
+### Environment Variables
+
+Set environment variables per-project in the Vercel dashboard. Each app can have its own set of env vars.
+
+## Other Platforms
+
+The generated project is a standard Turborepo + Next.js setup. It works with any platform that supports Node.js:
+
+- **Netlify** — Set build command to `cd ../.. && pnpm build --filter=web`
+- **Railway** — Point to the specific app directory
+- **Docker** — Use Turborepo's `prune` command for minimal images
+
+```bash
+# Generate a pruned monorepo with only the "web" app and its dependencies
+npx turbo prune web --docker
+```

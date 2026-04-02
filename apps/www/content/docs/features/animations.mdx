@@ -1,0 +1,56 @@
+---
+title: Animations
+description: Pre-configured Framer Motion, Lenis smooth scroll, and GSAP integration.
+---
+
+# Animations
+
+Monoframe supports three animation libraries, each wired with shared providers in `@repo/ui` so every frontend app can use them without setup.
+
+## Available Libraries
+
+### Framer Motion
+
+Production-ready motion library for React.
+
+- **MotionWrapper** component in `@repo/ui` providers
+- Pre-configured `template.tsx` for page transitions
+- Import directly: `import { MotionWrapper } from '@repo/ui'`
+
+### Lenis (Smooth Scroll)
+
+Buttery-smooth scroll experience.
+
+- **SmoothScrollProvider** auto-injected into each app's `layout.tsx`
+- Wraps the entire app for smooth scrolling
+- Import: `import { SmoothScrollProvider } from '@repo/ui'`
+
+### GSAP
+
+Professional-grade animation library.
+
+- **ScrollTrigger** plugin pre-registered
+- GSAP register utility at `@repo/ui/lib/gsap-register`
+- Import in `layout.tsx`: `import '@repo/ui/lib/gsap-register'`
+
+## Selection During Setup
+
+```
+◆  Animation libraries (press Enter to skip):
+│  ☑ Framer Motion
+│  ☑ Lenis (smooth scroll)
+│  ☐ GSAP
+```
+
+Select any combination — or none. Each library is independently optional.
+
+## How It Works
+
+1. **Providers** are created in `packages/ui/src/providers/`
+2. **Barrel exports** in `packages/ui/src/providers/index.ts`
+3. **Re-exported** from `packages/ui/src/index.ts`
+4. **Animation deps** added as `peerDependencies` on `@repo/ui`
+5. **Apps** install them as regular `dependencies`
+6. **Layout modifications** inject providers into each app's `layout.tsx`
+
+This architecture means animation components are shared — write once in `@repo/ui`, use in every app.
