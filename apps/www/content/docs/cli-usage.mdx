@@ -1,0 +1,83 @@
+---
+title: CLI Usage
+description: All Monoframe CLI commands, flags, and options.
+---
+
+# CLI Usage
+
+## Commands
+
+### `monoframe init`
+
+The main command. Launches the interactive project generator.
+
+```bash
+npx monoframe init [options]
+```
+
+### Options
+
+| Flag | Description |
+|------|-------------|
+| `--yes`, `-y` | Skip prompts, use default configuration |
+| `--reset-preferences` | Clear saved preferences before running |
+| `--help` | Show help |
+| `--version` | Show version number |
+
+## Default Configuration
+
+When using `--yes`, the following defaults are applied:
+
+```json
+{
+  "projectName": "my-saas",
+  "monorepoTool": "turborepo",
+  "framework": "nextjs",
+  "codeQuality": "eslint-prettier",
+  "apps": [
+    { "name": "web", "type": "frontend" },
+    { "name": "api", "type": "backend" }
+  ],
+  "shadcn": {
+    "enabled": true,
+    "base": "radix",
+    "preset": "nova"
+  },
+  "animations": [],
+  "features": {
+    "husky": false,
+    "playwright": false,
+    "githubActions": false
+  }
+}
+```
+
+## Preferences
+
+Monoframe remembers your choices between runs. When you run `init` again, your previous selections are pre-filled as defaults.
+
+To reset saved preferences:
+
+```bash
+npx monoframe init --reset-preferences
+```
+
+## Examples
+
+### Quick scaffold with defaults
+
+```bash
+npx monoframe init --yes
+```
+
+### Full interactive mode
+
+```bash
+npx monoframe init
+```
+
+### Reset and start fresh
+
+```bash
+npx monoframe init --reset-preferences
+```

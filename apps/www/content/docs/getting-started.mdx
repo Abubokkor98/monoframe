@@ -1,0 +1,73 @@
+---
+title: Getting Started
+description: Set up your first Monoframe project in under 2 minutes.
+---
+
+# Getting Started
+
+Get a production-ready monorepo running in under 2 minutes.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- **Node.js** 20.9 or later
+- **pnpm** 8 or later (recommended) — `npm install -g pnpm`
+- **Git** installed
+
+## Create Your Project
+
+Run the CLI and answer the interactive prompts:
+
+```bash
+npx monoframe init
+```
+
+You'll be asked about:
+
+1. **Project name** — lowercase, hyphens allowed (e.g. `my-saas-app`)
+2. **Monorepo tool** — Turborepo (Nx coming soon)
+3. **Frontend framework** — Next.js
+4. **Code quality** — ESLint + Prettier or Biome
+5. **Apps** — up to 5 frontend/backend apps
+6. **shadcn/ui** — enable with preset selection (Nova, Vega, Maia, Lyra, Mira, or Custom)
+7. **Animations** — Framer Motion, Lenis, GSAP
+8. **Extras** — Husky, Playwright, GitHub Actions
+
+## Start Development
+
+```bash
+cd my-saas-app
+pnpm install
+pnpm dev
+```
+
+Turborepo runs all your apps in parallel. Open:
+
+- `http://localhost:3000` — first frontend app
+- `http://localhost:3001` — second frontend app (if created)
+- `http://localhost:4000` — backend API (if created)
+
+## Project Structure
+
+```
+my-saas-app/
+├── apps/
+│   ├── web/              # Next.js frontend
+│   ├── admin/            # Another Next.js frontend
+│   └── api/              # Express + TypeScript backend
+├── packages/
+│   ├── ui/               # Shared shadcn/ui components
+│   ├── eslint-config/    # Shared ESLint configuration
+│   ├── typescript-config/ # Shared TypeScript configuration
+│   └── tailwind-config/  # Shared Tailwind CSS configuration
+├── turbo.json            # Turborepo pipeline config
+├── pnpm-workspace.yaml   # Workspace definition
+└── package.json          # Root scripts
+```
+
+## Next Steps
+
+- [CLI Usage](/docs/cli-usage) — Learn all CLI flags and options
+- [Features](/docs/features) — Deep dive into each feature
+- [shadcn/ui Integration](/docs/features/shadcn) — Learn about the monorepo-optimized setup

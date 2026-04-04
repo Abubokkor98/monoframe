@@ -1,0 +1,98 @@
+---
+title: shadcn/ui Integration
+description: Monorepo-optimized shared UI package with split aliases and custom presets.
+---
+
+# shadcn/ui Integration
+
+Monoframe provides a **monorepo-optimized** shadcn/ui setup that solves the common pain points of using shadcn in a multi-app project.
+
+## The Problem
+
+In a standard setup, running `shadcn add button` in one app doesn't make it available to other apps. You'd need to copy components between apps or maintain separate installations.
+
+## How Monoframe Solves It
+
+All shadcn/ui components live in a **shared `@repo/ui` package** that every frontend app can import from.
+
+### Package Structure
+
+```
+packages/ui/
+├── src/
+│   ├── components/      # UI primitives (button, card, input, etc.)
+│   ├── blocks/          # Composed UI blocks (login-form, dashboard, etc.)
+│   ├── providers/       # Animation providers (MotionWrapper, etc.)
+│   └── styles/
+│       └── globals.css  # Shared design tokens (CSS variables)
+├── hooks/               # Shared hooks
+├── lib/
+│   └── utils.ts         # cn() utility
+├── components.json      # Monorepo-optimized shadcn config
+└── package.json
+```
+
+### Split Aliases
+
+The `components.json` uses **separate aliases** for primitives and blocks:
+
+```json
+{
+  "aliases": {
+    "ui": "./src/components",
+    "components": "./src/blocks",
+    "hooks": "./hooks",
+    "lib": "./lib",
+    "utils": "./lib/utils"
+  }
+}
+```
+
+- `pnpm ui:add button` → installs to `src/components/button.tsx`
+- `pnpm ui:add login-form` → installs to `src/blocks/login-form.tsx`
+
+### Adding Components
+
+From the project root, run:
+
+```bash
+pnpm ui:add button
+pnpm ui:add card
+pnpm ui:add login-form
+```
+
+Components are immediately available to **all frontend apps** — no extra wiring needed.
+
+## Custom Presets
+
+Choose from 5 built-in presets or bring your own from [ui.shadcn.com/create](https://ui.shadcn.com/create):
+
+| Preset | Icon Library | Font |
+|--------|-------------|------|
+| Nova | Lucide | Geist |
+| Vega | Lucide | Inter |
+| Maia | Hugeicons | Figtree |
+| Lyra | Phosphor | JetBrains Mono |
+| Mira | Hugeicons | Inter |
+| **Custom** | Your choice | Your choice |
+
+### Using a Custom Preset
+
+1. Go to [ui.shadcn.com/create](https://ui.shadcn.com/create)
+2. Configure your theme
+3. Copy the preset code
+4. Select "Custom" during `monoframe init` and paste your code
+
+## Shared Design Tokens
+
+CSS variables (colors, radius, fonts) live in `packages/ui/src/styles/globals.css` and are imported by every frontend app. Each app can **override variables** for per-app theming:
+
+```css
+/* apps/admin/app/globals.css */
+@import '@repo/ui/src/styles/globals.css';
+
+/* Override: admin uses a different primary color */
+:root {
+  --primary: oklch(0.5 0.25 280);
+}
+```

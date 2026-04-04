@@ -1,0 +1,42 @@
+---
+title: Comparison
+description: How Monoframe compares to other scaffolding tools.
+---
+
+# Comparison
+
+## Monoframe vs Alternatives
+
+| Feature | Monoframe | create-turbo | create-next-app | create-t3-app |
+|---------|-----------|-------------|----------------|---------------|
+| Multi-app monorepo | ✅ | ✅ | ❌ | ❌ |
+| Shared UI package | ✅ | ✅ | ❌ | ❌ |
+| shadcn/ui integration | ✅ | ❌ | ❌ | ❌ |
+| Custom shadcn presets | ✅ | ❌ | ❌ | ❌ |
+| Animation libraries | ✅ | ❌ | ❌ | ❌ |
+| Backend (Express + TS) | ✅ | ❌ | ❌ | ❌ |
+| Shared configs | ✅ | ✅ | ❌ | ❌ |
+| GitHub Actions CI | ✅ | ❌ | ❌ | ❌ |
+| Playwright e2e | ✅ | ❌ | ❌ | ❌ |
+| Husky + lint-staged | ✅ | ❌ | ❌ | ❌ |
+| Preferences system | ✅ | ❌ | ❌ | ❌ |
+| Biome support | ✅ | ❌ | ❌ | ❌ |
+
+> Comparison based on Monoframe v0.x, create-turbo v2.x, create-next-app v16.x, and create-t3-app v8.x as of April 2026.
+
+## When to Use Monoframe
+
+**Use Monoframe when you need:**
+
+- A monorepo with multiple apps sharing code
+- Production-ready tooling from day one
+- shadcn/ui components shared across apps
+- Animation libraries pre-configured
+- CI/CD pipeline without manual setup
+
+**Use something else when you need:**
+
+- A single-app project (use `create-next-app`)
+- tRPC / database / auth integration (use `create-t3-app`)
+- Nx-specific features (Nx support coming in v1.1)
+- Non-Next.js frameworks (multi-framework support coming in v2.0)

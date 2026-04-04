@@ -1,5 +1,5 @@
 {
-  "name": "mononext",
+  "name": "monoframe",
   "private": true,
   "packageManager": "pnpm@10.29.1",
   "scripts": {

@@ -1,0 +1,57 @@
+---
+title: CI/CD
+description: GitHub Actions pipelines and Playwright e2e testing.
+---
+
+# CI/CD
+
+Monoframe optionally generates CI/CD configuration so your project is ready to ship from day one.
+
+## GitHub Actions
+
+When enabled, a `.github/workflows/ci.yml` pipeline is created with:
+
+- **Lint** — runs `pnpm turbo run lint` across the workspace
+- **Build** — runs `pnpm turbo run build` to verify everything compiles
+- **Test** — runs Playwright e2e tests (if enabled)
+- **Cache** — pnpm dependency cache for faster CI runs
+
+The pipeline runs on every push and pull request to `main`.
+
+## Playwright E2E Testing
+
+When enabled, each frontend app gets:
+
+- **Playwright** installed and configured
+- `playwright.config.ts` with sensible defaults
+- Example test file to verify the app loads
+- `pnpm test:e2e` script
+
+### Running Tests Locally
+
+```bash
+# Install browsers (first time only)
+pnpm exec playwright install
+
+# Run tests
+pnpm test:e2e
+```
+
+### In CI
+
+The GitHub Actions pipeline automatically:
+
+1. Installs Playwright browsers
+2. Builds all apps
+3. Runs e2e tests against the built apps
+
+## Selection During Setup
+
+```
+◆  Extra features (press Enter to skip):
+│  ☐ Husky + lint-staged (git hooks)
+│  ☐ Playwright (e2e testing)
+│  ☐ GitHub Actions CI
+```
+
+Each feature is independently optional.

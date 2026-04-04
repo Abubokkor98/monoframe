@@ -39,7 +39,7 @@ const PREFERENCES_DEFAULTS: SavedPreferences = {
 };
 
 const preferences = new Conf<SavedPreferences>({
-  projectName: 'mononext',
+  projectName: 'monoframe',
   schema: PREFERENCES_SCHEMA,
   defaults: PREFERENCES_DEFAULTS,
 });

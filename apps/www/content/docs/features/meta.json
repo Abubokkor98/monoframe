@@ -1,0 +1,12 @@
+{
+  "title": "Features",
+  "pages": [
+    "index",
+    "multi-app",
+    "shadcn",
+    "animations",
+    "code-quality",
+    "backend",
+    "ci-cd"
+  ]
+}

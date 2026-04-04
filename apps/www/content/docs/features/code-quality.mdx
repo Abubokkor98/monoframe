@@ -1,0 +1,61 @@
+---
+title: Code Quality
+description: ESLint + Prettier or Biome — shared configs with git hooks.
+---
+
+# Code Quality
+
+Monoframe offers two code quality tooling options, both fully configured with shared monorepo packages.
+
+## Option 1: ESLint + Prettier
+
+The industry standard. Separate tools for linting and formatting.
+
+**What you get:**
+
+- `@repo/eslint-config` shared package with Next.js + TypeScript rules
+- Prettier config at the root level
+- Per-app ESLint configs extending the shared package
+- `pnpm lint` runs ESLint across all packages
+
+## Option 2: Biome
+
+A faster, all-in-one alternative to ESLint + Prettier.
+
+**What you get:**
+
+- Root `biome.json` configuration
+- Linting AND formatting in a single tool
+- Significantly faster than ESLint + Prettier
+- `pnpm lint` runs Biome across all packages
+
+## Git Hooks (Husky)
+
+When enabled, Monoframe sets up:
+
+- **Husky** — Git hook manager
+- **lint-staged** — Run linters only on staged files
+- **Pre-commit hook** — Automatically formats and lints before every commit
+
+**With ESLint + Prettier:**
+
+```bash
+# What happens on git commit:
+1. lint-staged triggers
+2. Runs Prettier on staged files
+3. Runs ESLint on staged .ts/.tsx files
+4. Commit proceeds only if everything passes
+```
+
+**With Biome:**
+
+```bash
+# What happens on git commit:
+1. lint-staged triggers
+2. Runs Biome on staged files
+3. Commit proceeds only if everything passes
+```
+
+<Callout type="info">
+  Git hooks are optional. Select "Husky + lint-staged (git hooks)" in the extras prompt to enable them.
+</Callout>
