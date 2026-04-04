@@ -37,14 +37,25 @@ When enabled, Monoframe sets up:
 - **lint-staged** — Run linters only on staged files
 - **Pre-commit hook** — Automatically formats and lints before every commit
 
+**With ESLint + Prettier:**
+
 ```bash
 # What happens on git commit:
 1. lint-staged triggers
-2. Runs Prettier/Biome on staged files
+2. Runs Prettier on staged files
 3. Runs ESLint on staged .ts/.tsx files
 4. Commit proceeds only if everything passes
 ```
 
+**With Biome:**
+
+```bash
+# What happens on git commit:
+1. lint-staged triggers
+2. Runs Biome on staged files
+3. Commit proceeds only if everything passes
+```
+
 <Callout type="info">
-  Git hooks are optional. Select "Husky + lint-staged" in the extras prompt to enable them.
+  Git hooks are optional. Select "Husky + lint-staged (git hooks)" in the extras prompt to enable them.
 </Callout>

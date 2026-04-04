@@ -4,7 +4,7 @@ import { init } from './commands/init.js';
 const program = new Command();
 
 program
-  .name('mononext')
+  .name('monoframe')
   .description('Scaffold production-ready monorepos')
   .version('0.0.0');
 

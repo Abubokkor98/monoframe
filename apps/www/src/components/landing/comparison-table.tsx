@@ -159,9 +159,21 @@ export function ComparisonTable() {
                       }`}
                     >
                       {tool.features[feature] ? (
-                        <Check className="mx-auto h-4 w-4 text-brand-lime" />
+                        <>
+                          <Check
+                            aria-hidden="true"
+                            className="mx-auto h-4 w-4 text-brand-lime"
+                          />
+                          <span className="sr-only">Supported</span>
+                        </>
                       ) : (
-                        <X className="mx-auto h-4 w-4 text-text-muted/40" />
+                        <>
+                          <X
+                            aria-hidden="true"
+                            className="mx-auto h-4 w-4 text-text-muted/40"
+                          />
+                          <span className="sr-only">Not supported</span>
+                        </>
                       )}
                     </td>
                   ))}

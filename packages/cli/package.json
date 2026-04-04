@@ -1,15 +1,37 @@
 {
-  "name": "mononext",
+  "name": "monoframe",
   "version": "0.0.0",
   "description": "Scaffold production-ready monorepos",
   "type": "module",
   "bin": {
-    "mononext": "./dist/index.js"
+    "monoframe": "./dist/index.js"
   },
   "files": [
     "dist",
     "templates"
   ],
+  "license": "MIT",
+  "keywords": [
+    "monorepo",
+    "turborepo",
+    "nextjs",
+    "scaffold",
+    "cli",
+    "generator",
+    "typescript",
+    "tailwindcss",
+    "shadcn",
+    "fullstack"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Abubokkor98/monoframe.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/Abubokkor98/monoframe#readme",
+  "bugs": {
+    "url": "https://github.com/Abubokkor98/monoframe/issues"
+  },
   "scripts": {
     "dev": "tsup --watch"
   },

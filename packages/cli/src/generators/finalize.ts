@@ -123,7 +123,7 @@ ${backendSteps}
 
   return `# ${config.projectName}
 
-A Turborepo monorepo generated with [MonoNext](https://github.com/mononext).
+A Turborepo monorepo generated with [Monoframe](https://github.com/Abubokkor98/monoframe).
 
 ## Apps
 
@@ -183,7 +183,7 @@ async function initGitRepo(targetDir: string): Promise<boolean> {
   try {
     await execa('git', ['init'], { cwd: targetDir, stdio: 'pipe' });
     await execa('git', ['add', '-A'], { cwd: targetDir, stdio: 'pipe' });
-    await execa('git', ['commit', '-m', 'chore: initial commit from MonoNext'], {
+    await execa('git', ['commit', '-m', 'chore: initial commit from Monoframe'], {
       cwd: targetDir,
       stdio: 'pipe',
     });

@@ -22,7 +22,9 @@ Each backend app includes:
 ```
 apps/api/
 ├── src/
-│   └── index.ts          # Express server entry point
+│   ├── index.ts          # Express server entry point
+│   └── routes/
+│       └── health.ts     # Generated health route
 ├── package.json
 └── tsconfig.json         # Extends @repo/typescript-config
 ```
@@ -41,21 +43,22 @@ The generated `src/index.ts`:
 
 ```typescript
 import express from 'express';
+import cors from 'cors';
+import healthRouter from './routes/health.js';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+app.use(cors());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.json({ message: 'API is running' });
-});
+app.use('/health', healthRouter);
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`[api] Server running on http://localhost:${PORT}`);
 });
 ```
 
 ## Multiple Backends
 
-You can create multiple backend apps during setup. Each gets its own port, directory, and configuration — all sharing the same TypeScript and ESLint configs.
+You can create multiple backend apps during setup. Each gets its own port, directory, and configuration — all sharing the same TypeScript and code-quality configs.

@@ -48,12 +48,11 @@ Each backend app gets:
 
 All apps share these packages:
 
-| Package | Purpose |
-|---------|---------|
-| `@repo/ui` | shadcn/ui components, animation providers |
-| `@repo/eslint-config` | Shared ESLint rules |
-| `@repo/typescript-config` | Shared `tsconfig.json` presets |
-| `@repo/tailwind-config` | Shared Tailwind CSS configuration |
+| Package | Purpose | Condition |
+|---------|---------|-----------|
+| `@repo/typescript-config` | Shared `tsconfig.json` presets | Always |
+| `@repo/eslint-config` | Shared ESLint rules | ESLint + Prettier mode |
+| `@repo/ui` | shadcn/ui components, animation providers | When shadcn/ui is enabled |
 
 ## Pipeline
 

@@ -94,11 +94,12 @@ function HeroTerminal() {
       </div>
 
       {/* Terminal body */}
+      <p className="sr-only">
+        Animated example of the npx monoframe init CLI flow.
+      </p>
       <div
         ref={containerRef}
-        role="log"
-        aria-label="CLI demo output"
-        aria-live="polite"
+        aria-hidden="true"
         className="terminal-scrollbar h-[380px] overflow-y-auto p-4 font-mono text-xs leading-relaxed md:text-sm"
       >
         {displayedLines.map((line, index) => (
