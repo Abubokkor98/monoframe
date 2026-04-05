@@ -5,7 +5,7 @@ Scaffold **production-ready monorepos** in seconds. One command to generate a fu
 ## Quick Start
 
 ```bash
-npx monoframe init
+npx monoframe@beta init
 ```
 
 That's it. The interactive CLI walks you through everything.
@@ -28,25 +28,25 @@ That's it. The interactive CLI walks you through everything.
 ### Scaffold a new monorepo
 
 ```bash
-npx monoframe init
+npx monoframe@beta init
 ```
 
 ### With a project name
 
 ```bash
-npx monoframe init my-project
+npx monoframe@beta init my-project
 ```
 
 ### Use saved preferences
 
 ```bash
-npx monoframe init --use-preferences
+npx monoframe@beta init --use-preferences
 ```
 
 ### Reset saved preferences
 
 ```bash
-npx monoframe init --reset-preferences
+npx monoframe@beta init --reset-preferences
 ```
 
 ## Requirements
