@@ -153,7 +153,8 @@ async function modifyLayout(
       // Supports both layouts:
       //   - CSS variable: <body className={`${fontSans.variable} antialiased`}>
       //   - Simple:       <body className={inter.className}>
-      const bodyPattern = /(<body\s+className=\{.*?\}>)\s*\{children\}\s*<\/body>/m;
+      const bodyPattern =
+        /(<body\s+className=\{[\s\S]*?\}\s*>)\s*\{children\}\s*<\/body>/m;
       const updated = content.replace(
         bodyPattern,
         '$1<SmoothScrollProvider>{children}</SmoothScrollProvider></body>',
