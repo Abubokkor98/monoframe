@@ -1,3 +1,13 @@
+## 0.0.1-beta.9 (2026-04-06)
+
+### 🩹 Fixes
+
+- **cli:** map style export condition to actual CSS files in Turbopack config ([f269b35](https://github.com/Abubokkor98/mononext/commit/f269b35))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.8 (2026-04-06)
 
 ### 🚀 Features
