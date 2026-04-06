@@ -206,8 +206,22 @@ async function moveFilesToUiPackage(
     let css = await fs.readFile(globalsCssSrc, "utf-8");
     // Strip next/turbopack breaking CSS imports (standard plugin is handled below or by tailwindcss-animate)
     css = css.replace(/@import\s+['"]shadcn\/tailwind\.css['"];?\s*\n?/g, "");
-    css = css.replace(/@import\s+['"]tw-animate-css['"];?\s*\n?/g, '@plugin "tailwindcss-animate";\n');
+    css = css.replace(/@import\s+['"]tw-animate-css['"];?\s*\n?/g, "");
     css = css.replace(/@import\s+['"]shadcn\/dist\/tailwind\.css['"];?\s*\n?/g, "");
+    
+    // Guarantee plugin declaration exists
+    const hasAnimatePlugin = /@plugin\s+['"]tailwindcss-animate['"];?/.test(css);
+    if (!hasAnimatePlugin) {
+      if (/@import\s+['"]tailwindcss['"];?/.test(css)) {
+        css = css.replace(
+          /(@import\s+['"]tailwindcss['"];?\s*\n?)/,
+          `$1@plugin "tailwindcss-animate";\n`,
+        );
+      } else {
+        css = `@import 'tailwindcss';\n@plugin "tailwindcss-animate";\n${css}`;
+      }
+    }
+    
     await fs.writeFile(globalsCssSrc, css, "utf-8");
     await fs.move(globalsCssSrc, globalsCssDest, { overwrite: true });
   }
