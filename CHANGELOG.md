@@ -1,3 +1,13 @@
+## 0.0.1-beta.5 (2026-04-06)
+
+### 🩹 Fixes
+
+- **cli:** correct regex for matching body className in animations generator ([643d922](https://github.com/Abubokkor98/mononext/commit/643d922))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.4 (2026-04-06)
 
 ### 🩹 Fixes
