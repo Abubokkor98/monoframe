@@ -1,3 +1,14 @@
+## 0.0.1-beta.6 (2026-04-06)
+
+### 🩹 Fixes
+
+- **cli:** ensure tailwindcss-animate plugin is declared in globals CSS ([654bfbf](https://github.com/Abubokkor98/mononext/commit/654bfbf))
+- **shadcn-setup:** replace tw-animate-css with tailwindcss-animate ([079bd52](https://github.com/Abubokkor98/mononext/commit/079bd52))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.5 (2026-04-06)
 
 ### 🩹 Fixes
