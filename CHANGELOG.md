@@ -1,3 +1,13 @@
+## 0.0.1-beta.8 (2026-04-06)
+
+### 🚀 Features
+
+- **cli:** add turbopack resolveConditions to frontend app config ([351819a](https://github.com/Abubokkor98/mononext/commit/351819a))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.7 (2026-04-06)
 
 This was a version bump only, there were no code changes.
