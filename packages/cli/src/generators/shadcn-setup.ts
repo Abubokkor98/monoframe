@@ -178,7 +178,7 @@ async function inlineStyleOnlyImports(
   const stylesDir = path.dirname(globalsCssPath);
 
   for (const [specifier, config] of Object.entries(STYLE_ONLY_IMPORTS)) {
-    const escapedSpecifier = specifier.replace(/\//g, "\\/");
+    const escapedSpecifier = specifier.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const importPattern = new RegExp(
       `@import\\s+['"]${escapedSpecifier}['"];?\\s*\\n?`,
       "g",
@@ -199,6 +199,7 @@ async function inlineStyleOnlyImports(
       css = css.replace(importPattern, `@import "./${config.localName}";\n`);
     } else {
       // Package not installed — remove the import to avoid build errors
+      logger.warn(`Removing @import "${specifier}" — source not found at ${srcFile}`);
       css = css.replace(importPattern, "");
     }
   }
@@ -442,6 +443,7 @@ export async function generateShadcnSetup(
         globalsCssPath,
         "@import 'tailwindcss';\n@import 'tw-animate-css';\n",
       );
+      await inlineStyleOnlyImports(firstFrontendAppDir, globalsCssPath);
     }
 
     // 5. Write our monorepo-optimized components.json
@@ -454,10 +456,12 @@ export async function generateShadcnSetup(
     await writeFile(path.join(uiDir, "lib", "utils.ts"), CN_UTILS);
 
     // Write a minimal shared globals.css on failure
+    const fallbackGlobalsCss = path.join(uiDir, "src", "styles", "globals.css");
     await writeFile(
-      path.join(uiDir, "src", "styles", "globals.css"),
+      fallbackGlobalsCss,
       "@import 'tailwindcss';\n@import 'tw-animate-css';\n",
     );
+    await inlineStyleOnlyImports(firstFrontendAppDir, fallbackGlobalsCss);
 
     // Write a default components.json even on failure for future shadcn add
     await writeJson(
