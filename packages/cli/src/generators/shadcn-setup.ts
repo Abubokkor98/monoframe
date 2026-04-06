@@ -150,6 +150,63 @@ async function readShadcnGeneratedConfig(
 }
 
 /**
+ * Mapping of CSS @import specifiers that use the "style" export condition
+ * (which Turbopack cannot resolve) to the actual dist file inside node_modules.
+ */
+const STYLE_ONLY_IMPORTS: Record<string, { distFile: string; localName: string }> = {
+  "shadcn/tailwind.css": {
+    distFile: path.join("node_modules", "shadcn", "dist", "tailwind.css"),
+    localName: "shadcn-base.css",
+  },
+  "tw-animate-css": {
+    distFile: path.join("node_modules", "tw-animate-css", "dist", "tw-animate.css"),
+    localName: "tw-animate.css",
+  },
+};
+
+/**
+ * Turbopack does not support the "style" export condition used by shadcn and
+ * tw-animate-css. This function copies the actual CSS files from node_modules
+ * into packages/ui/src/styles/ and rewrites the @import directives in
+ * globals.css to reference the local copies instead.
+ */
+async function inlineStyleOnlyImports(
+  appDir: string,
+  globalsCssPath: string,
+): Promise<void> {
+  let css = await fs.readFile(globalsCssPath, "utf-8");
+  const stylesDir = path.dirname(globalsCssPath);
+
+  for (const [specifier, config] of Object.entries(STYLE_ONLY_IMPORTS)) {
+    const escapedSpecifier = specifier.replace(/\//g, "\\/");
+    const importPattern = new RegExp(
+      `@import\\s+['"]${escapedSpecifier}['"];?\\s*\\n?`,
+      "g",
+    );
+
+    if (!importPattern.test(css)) {
+      continue;
+    }
+
+    // Reset lastIndex after .test()
+    importPattern.lastIndex = 0;
+
+    const srcFile = path.join(appDir, config.distFile);
+    const destFile = path.join(stylesDir, config.localName);
+
+    if (await fs.pathExists(srcFile)) {
+      await fs.copy(srcFile, destFile, { overwrite: true });
+      css = css.replace(importPattern, `@import "./${config.localName}";\n`);
+    } else {
+      // Package not installed — remove the import to avoid build errors
+      css = css.replace(importPattern, "");
+    }
+  }
+
+  await fs.writeFile(globalsCssPath, css, "utf-8");
+}
+
+/**
  * Move shadcn-generated files from the first frontend app to packages/ui.
  * - components/ui/* → packages/ui/src/components/
  * - lib/utils.ts → packages/ui/lib/utils.ts
@@ -206,6 +263,11 @@ async function moveFilesToUiPackage(
 
   if (await fs.pathExists(globalsCssSrc)) {
     await fs.move(globalsCssSrc, globalsCssDest, { overwrite: true });
+
+    // Turbopack cannot resolve packages that only use the "style" export
+    // condition (shadcn, tw-animate-css). Copy the actual CSS files into the
+    // project and rewrite the imports to local relative paths.
+    await inlineStyleOnlyImports(firstFrontendAppDir, globalsCssDest);
   }
 
   // Delete components.json from the app (we write our own in packages/ui)
