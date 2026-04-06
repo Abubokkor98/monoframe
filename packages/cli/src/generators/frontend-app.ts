@@ -23,14 +23,6 @@ const NEXT_CONFIG = `import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@repo/ui'],
-  turbopack: {
-    resolveAlias: {
-      // shadcn and tw-animate-css use the "style" export condition which
-      // Turbopack does not recognise. Map them to their actual CSS dist files.
-      'shadcn/tailwind.css': 'shadcn/dist/tailwind.css',
-      'tw-animate-css': 'tw-animate-css/dist/tw-animate.css',
-    },
-  },
 };
 
 export default nextConfig;
