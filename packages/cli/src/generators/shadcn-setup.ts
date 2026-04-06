@@ -1,5 +1,6 @@
 import { AppConfig, ProjectConfig } from "../types/config.js";
 import { ensureDir, writeJson, writeFile } from "../utils/file-system.js";
+import { toDisplayName, buildLayoutTemplate } from "../utils/templates.js";
 import { logger, spinner } from "../utils/logger.js";
 import path from "path";
 import { execa } from "execa";
@@ -292,6 +293,24 @@ function buildUiComponentsJson(generatedConfig: {
   };
 }
 
+/**
+ * After shadcn init, the first app's layout.tsx contains stale imports:
+ *   - import { cn } from "@/lib/utils" (we moved utils to @repo/ui)
+ *   - body tag wrapped with cn() and font variables
+ *
+ * Instead of regex-patching shadcn's changes (fragile), we rewrite the layout
+ * from scratch using the shared template in utils/templates.ts.
+ */
+async function rewriteLayoutAfterShadcn(appDir: string, appName: string) {
+  const layoutPath = path.join(appDir, "app", "layout.tsx");
+
+  if (!(await fs.pathExists(layoutPath))) {
+    return;
+  }
+
+  await fs.writeFile(layoutPath, buildLayoutTemplate(toDisplayName(appName)));
+}
+
 export async function generateShadcnSetup(
   config: ProjectConfig,
   targetDir: string,
@@ -346,6 +365,11 @@ export async function generateShadcnSetup(
 
     // 4. Move generated files + globals.css to packages/ui
     await moveFilesToUiPackage(firstFrontendAppDir, uiDir);
+
+    // 4b. Rewrite layout.tsx — shadcn init adds stale `@/lib/utils` imports
+    //     and cn() wrapping. We rewrite with a clean CSS-variable-based layout
+    //     that follows Next.js/Vercel best practices.
+    await rewriteLayoutAfterShadcn(firstFrontendAppDir, firstFrontendApp.name);
 
     // Ensure globals.css exists even if shadcn didn't create one
     const globalsCssPath = path.join(uiDir, "src", "styles", "globals.css");
