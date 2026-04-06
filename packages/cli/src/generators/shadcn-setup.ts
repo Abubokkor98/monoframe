@@ -37,7 +37,7 @@ function buildUiPackageJson(): object {
     dependencies: {
       clsx: "latest",
       "tailwind-merge": "latest",
-      "tw-animate-css": "latest",
+      "tailwindcss-animate": "latest",
     },
     devDependencies: {
       "@repo/typescript-config": "workspace:*",
@@ -203,6 +203,12 @@ async function moveFilesToUiPackage(
   const globalsCssDest = path.join(uiDir, "src", "styles", "globals.css");
 
   if (await fs.pathExists(globalsCssSrc)) {
+    let css = await fs.readFile(globalsCssSrc, "utf-8");
+    // Strip next/turbopack breaking CSS imports (standard plugin is handled below or by tailwindcss-animate)
+    css = css.replace(/@import\s+['"]shadcn\/tailwind\.css['"];?\s*\n?/g, "");
+    css = css.replace(/@import\s+['"]tw-animate-css['"];?\s*\n?/g, '@plugin "tailwindcss-animate";\n');
+    css = css.replace(/@import\s+['"]shadcn\/dist\/tailwind\.css['"];?\s*\n?/g, "");
+    await fs.writeFile(globalsCssSrc, css, "utf-8");
     await fs.move(globalsCssSrc, globalsCssDest, { overwrite: true });
   }
 
@@ -376,7 +382,7 @@ export async function generateShadcnSetup(
     if (!(await fs.pathExists(globalsCssPath))) {
       await writeFile(
         globalsCssPath,
-        "@import 'tailwindcss';\n@import 'tw-animate-css';\n",
+        "@import 'tailwindcss';\n@plugin 'tailwindcss-animate';\n",
       );
     }
 
@@ -392,7 +398,7 @@ export async function generateShadcnSetup(
     // Write a minimal shared globals.css on failure
     await writeFile(
       path.join(uiDir, "src", "styles", "globals.css"),
-      "@import 'tailwindcss';\n@import 'tw-animate-css';\n",
+      "@import 'tailwindcss';\n@plugin 'tailwindcss-animate';\n",
     );
 
     // Write a default components.json even on failure for future shadcn add
@@ -418,6 +424,7 @@ export async function generateShadcnSetup(
       pkg.dependencies = {
         ...pkg.dependencies,
         "@repo/ui": "workspace:*",
+        "tailwindcss-animate": "latest",
       };
 
       await writeJson(appPkgPath, pkg);
