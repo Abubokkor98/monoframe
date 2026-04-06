@@ -288,7 +288,7 @@ export async function generateAnimations(config: ProjectConfig, targetDir: strin
   }
 
   const mainIndexContent = await fs.readFile(mainIndexPath, 'utf-8');
-  const reExportLine = "export * from './providers/index.js';";
+  const reExportLine = "export * from './providers/index';";
   if (!mainIndexContent.includes(reExportLine)) {
     await fs.writeFile(mainIndexPath, mainIndexContent.trimEnd() + '\n' + reExportLine + '\n');
   }
