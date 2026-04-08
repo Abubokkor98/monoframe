@@ -1,3 +1,17 @@
+## 0.0.1-beta.14 (2026-04-08)
+
+### 🚀 Features
+
+- **frontend-app:** migrate to Tailwind CSS v4 setup with PostCSS config ([464c456](https://github.com/Abubokkor98/mononext/commit/464c456))
+
+### 🩹 Fixes
+
+- **cli:** correct relative paths for shared UI package in CSS imports ([f40ed60](https://github.com/Abubokkor98/mononext/commit/f40ed60))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.13 (2026-04-08)
 
 ### 🚀 Features
