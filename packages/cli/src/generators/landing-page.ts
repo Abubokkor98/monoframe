@@ -48,7 +48,7 @@ export function buildLandingPage(
     .join('\n\n');
 
   return `${needsClientDirective ? "'use client';\n\n" : ''}${imports}
-export default function Home() {${hasGsap ? buildGsapSetup() : ''}
+export default function Home() {${hasFramerMotion ? '\n  const prefersReducedMotion = useReducedMotion();' : ''}${hasGsap ? buildGsapSetup() : ''}
   return (
     <main className="${styles.mainBg} min-h-screen">
 ${sections}
@@ -126,7 +126,7 @@ function buildImports(flags: ImportFlags): string {
   const lines: string[] = [];
 
   if (flags.hasFramerMotion) {
-    lines.push("import { motion } from 'framer-motion';");
+    lines.push("import { motion, useReducedMotion } from 'framer-motion';");
   }
 
   if (flags.hasGsap) {
@@ -150,10 +150,18 @@ function buildGsapSetup(): string {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
-    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const cards = sectionRef.current?.querySelectorAll('[data-gsap-card]');
     if (!cards) return;
+
+    if (prefersReducedMotion) {
+      cards.forEach((card) => {
+        gsap.set(card, { opacity: 1, y: 0 });
+      });
+      return;
+    }
 
     cards.forEach((card, index) => {
       gsap.fromTo(
@@ -209,9 +217,9 @@ function buildHeroSection(
       <section className="${styles.heroBg} relative overflow-hidden">
         <div className="mx-auto max-w-5xl px-6 py-24 sm:py-32 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: 'easeOut' }}
+            transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.6, ease: 'easeOut' }}
           >
             ${content}
           </motion.div>
@@ -327,10 +335,10 @@ function buildTechStackSection(
     if (hasFramerMotion && !hasGsap) {
       return `<motion.div
               key="${item.name}"
-              initial={{ opacity: 0, y: 20 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: ${index} * 0.1 }}
+              transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.4, delay: ${index} * 0.1 }}
             >
               ${card}
             </motion.div>`;
@@ -427,8 +435,13 @@ function buildStructureSection(
   const packageLines: string[] = [
     '│   ├── ui/               # Shared UI components',
     '│   ├── typescript-config/ # Shared TS config',
-    '│   └── eslint-config/    # Shared lint rules',
   ];
+
+  if (config.codeQuality === 'eslint-prettier') {
+    packageLines.push('│   └── eslint-config/    # Shared lint rules');
+  } else if (config.codeQuality === 'biome') {
+    packageLines.push('│   └── biome-config/     # Shared Biome config');
+  }
 
   const tree = `├── apps/
 ${appLines.map((line) => `│   ${line}`).join('\n')}
