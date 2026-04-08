@@ -1,3 +1,13 @@
+## 0.0.1-beta.13 (2026-04-08)
+
+### 🚀 Features
+
+- **animations:** add @gsap/react as dependency and peer dependency ([b3e360f](https://github.com/Abubokkor98/mononext/commit/b3e360f))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.12 (2026-04-08)
 
 ### 🚀 Features
