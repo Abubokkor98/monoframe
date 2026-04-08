@@ -197,6 +197,7 @@ async function addAnimationDeps(packageJsonPath: string, config: ProjectConfig) 
 
   if (config.animations.includes('gsap')) {
     deps.gsap = LATEST_DEPS.gsap;
+    deps['@gsap/react'] = LATEST_DEPS['@gsap/react'];
   }
 
   if (Object.keys(deps).length > 0) {
@@ -223,6 +224,7 @@ async function addUiPeerDeps(uiPackageJsonPath: string, config: ProjectConfig) {
 
   if (config.animations.includes('gsap')) {
     peerDeps.gsap = '>=3';
+    peerDeps['@gsap/react'] = '>=2';
   }
 
   if (Object.keys(peerDeps).length > 0) {

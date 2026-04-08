@@ -22,6 +22,7 @@ export const LATEST_DEPS = {
   'framer-motion': 'latest',
   lenis: 'latest',
   gsap: 'latest',
+  '@gsap/react': 'latest',
   '@playwright/test': 'latest',
   husky: 'latest',
   'lint-staged': 'latest',
