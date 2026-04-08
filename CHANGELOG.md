@@ -1,3 +1,13 @@
+## 0.0.1-beta.11 (2026-04-08)
+
+### 🩹 Fixes
+
+- **cli:** support Turbopack CSS style imports in shadcn setup ([c0366e8](https://github.com/Abubokkor98/mononext/commit/c0366e8))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.10 (2026-04-08)
 
 ### 🩹 Fixes
