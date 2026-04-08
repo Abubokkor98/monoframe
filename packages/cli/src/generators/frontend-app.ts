@@ -60,7 +60,7 @@ function buildPackageJson(app: AppConfig, config: ProjectConfig): object {
     '@types/react': LATEST_DEPS['@types/react'],
     '@types/react-dom': LATEST_DEPS['@types/react-dom'],
     tailwindcss: LATEST_DEPS.tailwindcss,
-    '@tailwindcss/postcss': 'latest',
+    '@tailwindcss/postcss': LATEST_DEPS['@tailwindcss/postcss'],
   };
 
   if (config.codeQuality === 'eslint-prettier') {
