@@ -334,7 +334,7 @@ async function writeAppGlobalsCss(
 @import '@repo/ui/src/styles/globals.css';
 
 /* Scan shared UI package for Tailwind classes (monorepo) */
-@source '../../packages/ui/src';
+@source '../../../packages/ui/src';
 
 /*
  * App-specific overrides for "${app.name}"

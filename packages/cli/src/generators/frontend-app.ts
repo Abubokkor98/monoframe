@@ -10,7 +10,7 @@ import { LATEST_DEPS } from '../constants/versions.js';
 const GLOBALS_CSS = `@import 'tailwindcss';
 
 /* Scan shared UI package for Tailwind classes (monorepo) */
-@source '../../packages/ui/src';
+@source '../../../packages/ui/src';
 `;
 
 const POSTCSS_CONFIG = `const config = {
