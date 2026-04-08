@@ -45,6 +45,7 @@ function buildUiPackageJson(): object {
       "@repo/typescript-config": "workspace:*",
     },
     peerDependencies: {
+      next: ">=15",
       react: ">=18",
       "react-dom": ">=18",
     },
