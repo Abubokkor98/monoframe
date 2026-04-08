@@ -8,6 +8,18 @@ import { LATEST_DEPS } from '../constants/versions.js';
 
 
 const GLOBALS_CSS = `@import 'tailwindcss';
+
+/* Scan shared UI package for Tailwind classes (monorepo) */
+@source '../../../packages/ui/src';
+`;
+
+const POSTCSS_CONFIG = `const config = {
+  plugins: {
+    '@tailwindcss/postcss': {},
+  },
+};
+
+export default config;
 `;
 
 const NEXT_CONFIG = `import type { NextConfig } from 'next';
@@ -19,20 +31,7 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 `;
 
-function buildTailwindConfig(): string {
-  return `import type { Config } from 'tailwindcss';
 
-const config: Config = {
-  content: [
-    './app/**/*.{ts,tsx}',
-    './components/**/*.{ts,tsx}',
-    '../../packages/ui/src/**/*.{ts,tsx}',
-  ],
-};
-
-export default config;
-`;
-}
 
 function buildTsconfig(): object {
   return {
@@ -61,6 +60,7 @@ function buildPackageJson(app: AppConfig, config: ProjectConfig): object {
     '@types/react': LATEST_DEPS['@types/react'],
     '@types/react-dom': LATEST_DEPS['@types/react-dom'],
     tailwindcss: LATEST_DEPS.tailwindcss,
+    '@tailwindcss/postcss': LATEST_DEPS['@tailwindcss/postcss'],
   };
 
   if (config.codeQuality === 'eslint-prettier') {
@@ -107,8 +107,8 @@ export async function generateFrontendApps(config: ProjectConfig, targetDir: str
     // next.config.ts
     await writeFile(path.join(appDir, 'next.config.ts'), NEXT_CONFIG);
 
-    // tailwind.config.ts
-    await writeFile(path.join(appDir, 'tailwind.config.ts'), buildTailwindConfig());
+    // postcss.config.mjs (required for Tailwind v4)
+    await writeFile(path.join(appDir, 'postcss.config.mjs'), POSTCSS_CONFIG);
 
     // app/layout.tsx
     await writeFile(
