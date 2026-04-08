@@ -149,54 +149,20 @@ async function readShadcnGeneratedConfig(
   }
 }
 
-interface StyleOnlyImportConfig {
-  packageName: string;
-  distRelativePath: string;
-  localName: string;
-}
-
 /**
  * Mapping of CSS @import specifiers that use the "style" export condition
  * (which Turbopack cannot resolve) to the actual dist file inside node_modules.
  */
-const STYLE_ONLY_IMPORTS: Record<string, StyleOnlyImportConfig> = {
+const STYLE_ONLY_IMPORTS: Record<string, { distFile: string; localName: string }> = {
   "shadcn/tailwind.css": {
-    packageName: "shadcn",
-    distRelativePath: path.join("dist", "tailwind.css"),
+    distFile: path.join("node_modules", "shadcn", "dist", "tailwind.css"),
     localName: "shadcn-base.css",
   },
   "tw-animate-css": {
-    packageName: "tw-animate-css",
-    distRelativePath: path.join("dist", "tw-animate.css"),
+    distFile: path.join("node_modules", "tw-animate-css", "dist", "tw-animate.css"),
     localName: "tw-animate.css",
   },
 };
-
-/**
- * Walk up from startDir checking each node_modules/ for the package dist file.
- * This handles pnpm workspace hoisting where packages live at the workspace
- * root node_modules/ rather than in the app's own node_modules/.
- */
-async function findInNodeModules(
-  startDir: string,
-  packageName: string,
-  distRelativePath: string,
-): Promise<string | null> {
-  let dir = path.resolve(startDir);
-  const rootDir = path.parse(dir).root;
-
-  while (dir !== rootDir) {
-    const candidate = path.join(dir, "node_modules", packageName, distRelativePath);
-
-    if (await fs.pathExists(candidate)) {
-      return candidate;
-    }
-
-    dir = path.dirname(dir);
-  }
-
-  return null;
-}
 
 /**
  * Turbopack does not support the "style" export condition used by shadcn and
@@ -225,19 +191,15 @@ async function inlineStyleOnlyImports(
     // Reset lastIndex after .test()
     importPattern.lastIndex = 0;
 
-    const srcFile = await findInNodeModules(
-      appDir,
-      config.packageName,
-      config.distRelativePath,
-    );
+    const srcFile = path.join(appDir, config.distFile);
     const destFile = path.join(stylesDir, config.localName);
 
-    if (srcFile) {
+    if (await fs.pathExists(srcFile)) {
       await fs.copy(srcFile, destFile, { overwrite: true });
       css = css.replace(importPattern, `@import "./${config.localName}";\n`);
     } else {
       // Package not installed — remove the import to avoid build errors
-      logger.warn(`Removing @import "${specifier}" — source CSS not found in any node_modules`);
+      logger.warn(`Removing @import "${specifier}" — source not found at ${srcFile}`);
       css = css.replace(importPattern, "");
     }
   }
@@ -414,54 +376,6 @@ async function rewriteLayoutAfterShadcn(appDir: string, appName: string) {
   await fs.writeFile(layoutPath, buildLayoutTemplate(toDisplayName(appName)));
 }
 
-/**
- * Turbopack doesn't support the "style" export condition in package.json.
- * Patch each frontend app's next.config.ts with resolveAlias entries that
- * map CSS-only specifiers directly to their dist files. This is a permanent
- * fix — it works even if `shadcn add` re-introduces bare @import specifiers
- * into globals.css after the initial scaffold.
- */
-async function patchNextConfigForTurbopack(
-  targetDir: string,
-  frontendApps: AppConfig[],
-) {
-  const configContent = `import type { NextConfig } from 'next';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Workspace root is two levels up from apps/<name>/
-const workspaceRoot = path.resolve(__dirname, '..', '..');
-
-const nextConfig: NextConfig = {
-  transpilePackages: ['@repo/ui'],
-  turbopack: {
-    resolveAlias: {
-      // Turbopack can't resolve CSS packages that only use the "style"
-      // export condition. Map them directly to the dist files.
-      'shadcn/tailwind.css': path.join(
-        workspaceRoot, 'node_modules', 'shadcn', 'dist', 'tailwind.css',
-      ),
-      'tw-animate-css': path.join(
-        workspaceRoot, 'node_modules', 'tw-animate-css', 'dist', 'tw-animate.css',
-      ),
-    },
-  },
-};
-
-export default nextConfig;
-`;
-
-  for (const app of frontendApps) {
-    const configPath = path.join(targetDir, "apps", app.name, "next.config.ts");
-
-    if (await fs.pathExists(configPath)) {
-      await fs.writeFile(configPath, configContent, "utf-8");
-    }
-  }
-}
-
 export async function generateShadcnSetup(
   config: ProjectConfig,
   targetDir: string,
@@ -577,10 +491,4 @@ export async function generateShadcnSetup(
       await writeJson(appPkgPath, pkg);
     }
   }
-
-  // 8. Patch next.config.ts with Turbopack resolve aliases.
-  //    This is a permanent fix so @import "shadcn/tailwind.css" and
-  //    @import "tw-animate-css" resolve correctly even if `shadcn add`
-  //    re-introduces the bare specifiers in globals.css later.
-  await patchNextConfigForTurbopack(targetDir, frontendApps);
 }
