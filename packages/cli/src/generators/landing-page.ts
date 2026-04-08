@@ -374,22 +374,24 @@ function buildAnimationDemoNote(
     return '';
   }
 
-  const notes: string[] = [];
+  const notes: { prefix: string; highlight: string; suffix: string }[] = [];
 
   if (flags.hasFramerMotion) {
-    notes.push('The hero above fades in using <strong>Framer Motion</strong>.');
+    notes.push({ prefix: 'The hero above fades in using ', highlight: 'Framer Motion', suffix: '.' });
   }
 
   if (flags.hasLenis) {
-    notes.push('Smooth scrolling is powered by <strong>Lenis</strong> — scroll to feel the difference.');
+    notes.push({ prefix: 'Smooth scrolling is powered by ', highlight: 'Lenis', suffix: ' \u2014 scroll to feel the difference.' });
   }
 
   if (flags.hasGsap) {
-    notes.push('The tech stack cards animate in using <strong>GSAP ScrollTrigger</strong>.');
+    notes.push({ prefix: 'The tech stack cards animate in using ', highlight: 'GSAP ScrollTrigger', suffix: '.' });
   }
 
   const noteItems = notes
-    .map((note) => `<span className="inline-flex items-center gap-2 text-sm ${styles.muted}" dangerouslySetInnerHTML={{ __html: '${note}' }} />`)
+    .map((note) => `<span className="inline-flex items-center gap-2 text-sm ${styles.muted}">
+              ${note.prefix}<strong>${note.highlight}</strong>${note.suffix}
+            </span>`)
     .join('\n              ');
 
   return `      {/* Animation Demo Note */}
@@ -416,10 +418,10 @@ function buildStructureSection(
 
   const appLines: string[] = [];
   for (const app of frontendApps) {
-    appLines.push(`│   ├── ${app.name}/          # Next.js app`);
+    appLines.push(`├── ${app.name}/          # Next.js app`);
   }
   for (const app of backendApps) {
-    appLines.push(`│   ├── ${app.name}/          # Express API`);
+    appLines.push(`├── ${app.name}/          # Express API`);
   }
 
   const packageLines: string[] = [
@@ -429,7 +431,7 @@ function buildStructureSection(
   ];
 
   const tree = `├── apps/
-${appLines.map((line) => `│   ${line.slice(4)}`).join('\n')}
+${appLines.map((line) => `│   ${line}`).join('\n')}
 ├── packages/
 ${packageLines.join('\n')}
 ├── turbo.json
