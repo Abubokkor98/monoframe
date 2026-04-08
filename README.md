@@ -13,7 +13,7 @@
 ## Try the beta
 
 ```bash
-npx monoframe@latest init
+npx monoframe@beta init
 ```
 
 That's it. No install needed. Answer the prompts and your project is ready.
