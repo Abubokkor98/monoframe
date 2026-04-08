@@ -1,3 +1,18 @@
+## 0.0.1-beta.12 (2026-04-08)
+
+### 🚀 Features
+
+- **animations:** add reduced motion support for framer-motion animations ([8a2aadc](https://github.com/Abubokkor98/mononext/commit/8a2aadc))
+- **frontend-app:** replace default app page with dynamic landing page ([10e471a](https://github.com/Abubokkor98/mononext/commit/10e471a))
+
+### 🩹 Fixes
+
+- **landing-page:** correct GSAP plugin registration in useGSAP hook ([04bbc07](https://github.com/Abubokkor98/mononext/commit/04bbc07))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.11 (2026-04-08)
 
 ### 🩹 Fixes
