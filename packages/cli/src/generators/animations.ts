@@ -8,7 +8,7 @@ import { LATEST_DEPS } from '../constants/versions.js';
 
 const MOTION_WRAPPER = `'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 
 interface MotionWrapperProps {
@@ -17,15 +17,16 @@ interface MotionWrapperProps {
 
 export function MotionWrapper({ children }: MotionWrapperProps) {
   const pathname = usePathname();
+  const prefersReducedMotion = useReducedMotion();
 
   return (
     <AnimatePresence mode="wait">
       <motion.div
         key={pathname}
-        initial={{ opacity: 0, y: 20 }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: -20 }}
+        transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: 'easeInOut' }}
       >
         {children}
       </motion.div>
@@ -56,10 +57,11 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
 const GSAP_REGISTER = `'use client';
 
 import { gsap } from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 // Register GSAP plugins once — imported in root layout
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export { gsap, ScrollTrigger };
 `;

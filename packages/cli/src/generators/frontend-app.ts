@@ -1,20 +1,11 @@
 import { AppConfig, ProjectConfig } from '../types/config.js';
 import { ensureDir, writeJson, writeFile } from '../utils/file-system.js';
 import { toDisplayName, buildLayoutTemplate } from '../utils/templates.js';
+import { buildLandingPage } from './landing-page.js';
 import path from 'path';
 import { LATEST_DEPS } from '../constants/versions.js';
 
-const PAGE_TEMPLATE = `export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold">APP_DISPLAY_NAME</h1>
-      <p className="mt-4 text-lg text-gray-500">
-        Edit <code className="font-mono font-bold">app/page.tsx</code> to get started.
-      </p>
-    </main>
-  );
-}
-`;
+
 
 const GLOBALS_CSS = `@import 'tailwindcss';
 `;
@@ -125,10 +116,9 @@ export async function generateFrontendApps(config: ProjectConfig, targetDir: str
       buildLayoutTemplate(displayName),
     );
 
-    // app/page.tsx
     await writeFile(
       path.join(appSourceDir, 'page.tsx'),
-      PAGE_TEMPLATE.replaceAll('APP_DISPLAY_NAME', displayName),
+      buildLandingPage(config, displayName),
     );
 
     // app/globals.css
