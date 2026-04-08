@@ -150,6 +150,9 @@ function buildGsapSetup(): string {
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useGSAP(() => {
+    // Also registered in animations.ts (gsap-register.ts template).
+    // Duplicated here because page.tsx and gsap-register.ts are independent output files.
+    // registerPlugin is idempotent so double-calling is safe.
     gsap.registerPlugin(useGSAP, ScrollTrigger);
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
