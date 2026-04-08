@@ -21,6 +21,8 @@ export const LATEST_DEPS = {
   prettier: 'latest',
   '@biomejs/biome': 'latest',
   'framer-motion': 'latest',
+  'next-themes': 'latest',
+  geist: 'latest',
   lenis: 'latest',
   gsap: 'latest',
   '@gsap/react': 'latest',
