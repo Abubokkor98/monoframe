@@ -1,3 +1,14 @@
+## 0.0.1-beta.10 (2026-04-08)
+
+### 🩹 Fixes
+
+- **cli:** improve style imports handling in shadcn setup ([c001f3a](https://github.com/Abubokkor98/mononext/commit/c001f3a))
+- **cli:** support Turbopack style-only import resolution ([dff251a](https://github.com/Abubokkor98/mononext/commit/dff251a))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.9 (2026-04-06)
 
 ### 🩹 Fixes
