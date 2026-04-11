@@ -90,7 +90,7 @@ export const FONT_MAP: Record<string, FontConfig> = {
 
   // Geist fonts (npm package)
   "geist": {
-    importName: "Geist",
+    importName: "GeistSans",
     importPackage: "geist/font/sans",
     cssVariable: "--font-sans",
     tailwindClass: "font-sans",

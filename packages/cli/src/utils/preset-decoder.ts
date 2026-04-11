@@ -180,6 +180,10 @@ function fromBase62(str: string): number {
     }
 
     result = result * 62 + idx;
+
+    if (!Number.isSafeInteger(result)) {
+      return -1;
+    }
   }
 
   return result;

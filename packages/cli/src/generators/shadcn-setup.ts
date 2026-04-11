@@ -535,10 +535,19 @@ export function ThemeProvider({
     themeProviderContent,
   );
 
-  await writeFile(
-    path.join(uiDir, "src", "index.ts"),
-    "export { ThemeProvider } from './providers/theme-provider';\n",
-  );
+  const indexPath = path.join(uiDir, "src", "index.ts");
+  const themeProviderExport =
+    "export { ThemeProvider } from './providers/theme-provider';";
+  const existingIndex = (await fs.pathExists(indexPath))
+    ? await fs.readFile(indexPath, "utf-8")
+    : "";
+
+  if (!existingIndex.includes(themeProviderExport)) {
+    await writeFile(
+      indexPath,
+      existingIndex.trimEnd() + "\n" + themeProviderExport + "\n",
+    );
+  }
   // Note: globals.css in src/styles/ will be populated by shadcn init (moved from first app)
 
   // 2. Try running shadcn init programmatically
@@ -613,6 +622,7 @@ export function ThemeProvider({
       pkg.dependencies = {
         ...pkg.dependencies,
         "@repo/ui": "workspace:*",
+        ...(fontConfig.needsGeistPackage ? { geist: "latest" } : {}),
       };
 
       await writeJson(appPkgPath, pkg);
