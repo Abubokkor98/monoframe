@@ -1,6 +1,7 @@
 import { AppConfig, ProjectConfig } from "../types/config.js";
 import { ensureDir, writeJson, writeFile } from "../utils/file-system.js";
 import { toDisplayName, buildLayoutTemplate } from "../utils/templates.js";
+import { resolveFont, type FontConfig } from "../utils/resolve-font.js";
 import { logger, spinner } from "../utils/logger.js";
 import path from "path";
 import { execa } from "execa";
@@ -22,7 +23,21 @@ export function cn(...inputs: ClassValue[]) {
 }
 `;
 
-function buildUiPackageJson(): object {
+function buildUiPackageJson(fontConfig: FontConfig): object {
+  const dependencies: Record<string, string> = {
+    clsx: "latest",
+    "next-themes": "latest",
+    shadcn: "latest",
+    tailwindcss: "latest",
+    "tailwind-merge": "latest",
+    "tw-animate-css": "latest",
+  };
+
+  // Geist fonts require the `geist` npm package
+  if (fontConfig.needsGeistPackage) {
+    dependencies["geist"] = "latest";
+  }
+
   return {
     name: "@repo/ui",
     version: "0.0.0",
@@ -34,13 +49,7 @@ function buildUiPackageJson(): object {
       "./lib/*": "./lib/*",
       "./hooks/*": "./hooks/*",
     },
-    dependencies: {
-      clsx: "latest",
-      shadcn: "latest",
-      tailwindcss: "latest",
-      "tailwind-merge": "latest",
-      "tw-animate-css": "latest",
-    },
+    dependencies,
     devDependencies: {
       "@repo/typescript-config": "workspace:*",
     },
@@ -407,15 +416,24 @@ function buildUiComponentsJson(generatedConfig: {
  *
  * Instead of regex-patching shadcn's changes (fragile), we rewrite the layout
  * from scratch using the shared template in utils/templates.ts.
+ * The font is resolved from the user's preset so layout.tsx uses the correct
+ * Google Font (not hardcoded Inter).
  */
-async function rewriteLayoutAfterShadcn(appDir: string, appName: string) {
+async function rewriteLayoutAfterShadcn(
+  appDir: string,
+  appName: string,
+  fontConfig: FontConfig,
+) {
   const layoutPath = path.join(appDir, "app", "layout.tsx");
 
   if (!(await fs.pathExists(layoutPath))) {
     return;
   }
 
-  await fs.writeFile(layoutPath, buildLayoutTemplate(toDisplayName(appName)));
+  await fs.writeFile(
+    layoutPath,
+    buildLayoutTemplate(toDisplayName(appName), fontConfig, true),
+  );
 }
 
 /**
@@ -480,6 +498,7 @@ export async function generateShadcnSetup(
     return;
   }
 
+  const fontConfig = resolveFont(config.shadcn);
   const firstFrontendApp = frontendApps[0];
   const firstFrontendAppDir = path.join(
     targetDir,
@@ -496,12 +515,39 @@ export async function generateShadcnSetup(
   await ensureDir(path.join(uiDir, "hooks"));
   await ensureDir(path.join(uiDir, "lib"));
 
-  await writeJson(path.join(uiDir, "package.json"), buildUiPackageJson());
+  await writeJson(path.join(uiDir, "package.json"), buildUiPackageJson(fontConfig));
   await writeJson(path.join(uiDir, "tsconfig.json"), buildUiTsconfig());
+
+  // Generate ThemeProvider for dark mode support (official shadcn approach)
+  const themeProviderContent = `'use client';
+
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
+
+export function ThemeProvider({
+  children,
+  ...props
+}: React.ComponentProps<typeof NextThemesProvider>) {
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
+}
+`;
   await writeFile(
-    path.join(uiDir, "src", "index.ts"),
-    "// Export your UI components here\n",
+    path.join(uiDir, "src", "providers", "theme-provider.tsx"),
+    themeProviderContent,
   );
+
+  const indexPath = path.join(uiDir, "src", "index.ts");
+  const themeProviderExport =
+    "export { ThemeProvider } from './providers/theme-provider';";
+  const existingIndex = (await fs.pathExists(indexPath))
+    ? await fs.readFile(indexPath, "utf-8")
+    : "";
+
+  if (!existingIndex.includes(themeProviderExport)) {
+    await writeFile(
+      indexPath,
+      existingIndex.trimEnd() + "\n" + themeProviderExport + "\n",
+    );
+  }
   // Note: globals.css in src/styles/ will be populated by shadcn init (moved from first app)
 
   // 2. Try running shadcn init programmatically
@@ -523,8 +569,8 @@ export async function generateShadcnSetup(
 
     // 4b. Rewrite layout.tsx — shadcn init adds stale `@/lib/utils` imports
     //     and cn() wrapping. We rewrite with a clean CSS-variable-based layout
-    //     that follows Next.js/Vercel best practices.
-    await rewriteLayoutAfterShadcn(firstFrontendAppDir, firstFrontendApp.name);
+    //     that uses the correct preset font and includes ThemeProvider.
+    await rewriteLayoutAfterShadcn(firstFrontendAppDir, firstFrontendApp.name, fontConfig);
 
     // Ensure globals.css exists even if shadcn didn't create one
     const globalsCssPath = path.join(uiDir, "src", "styles", "globals.css");
@@ -562,6 +608,9 @@ export async function generateShadcnSetup(
         baseColor: "neutral",
       }),
     );
+
+    // Restore layout.tsx — shadcn init may have partially modified it before failing
+    await rewriteLayoutAfterShadcn(firstFrontendAppDir, firstFrontendApp.name, fontConfig);
   }
 
   // 6. Write each app's globals.css to import shared design tokens
@@ -576,6 +625,7 @@ export async function generateShadcnSetup(
       pkg.dependencies = {
         ...pkg.dependencies,
         "@repo/ui": "workspace:*",
+        ...(fontConfig.needsGeistPackage ? { geist: "latest" } : {}),
       };
 
       await writeJson(appPkgPath, pkg);

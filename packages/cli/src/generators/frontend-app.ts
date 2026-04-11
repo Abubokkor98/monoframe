@@ -1,6 +1,7 @@
 import { AppConfig, ProjectConfig } from '../types/config.js';
 import { ensureDir, writeJson, writeFile } from '../utils/file-system.js';
 import { toDisplayName, buildLayoutTemplate } from '../utils/templates.js';
+import { resolveFont } from '../utils/resolve-font.js';
 import { buildLandingPage } from './landing-page.js';
 import path from 'path';
 import { LATEST_DEPS } from '../constants/versions.js';
@@ -110,10 +111,13 @@ export async function generateFrontendApps(config: ProjectConfig, targetDir: str
     // postcss.config.mjs (required for Tailwind v4)
     await writeFile(path.join(appDir, 'postcss.config.mjs'), POSTCSS_CONFIG);
 
+    const hasShadcn = config.shadcn.enabled;
+    const fontConfig = resolveFont(config.shadcn);
+
     // app/layout.tsx
     await writeFile(
       path.join(appSourceDir, 'layout.tsx'),
-      buildLayoutTemplate(displayName),
+      buildLayoutTemplate(displayName, fontConfig, hasShadcn),
     );
 
     await writeFile(

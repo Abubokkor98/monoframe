@@ -151,20 +151,17 @@ async function modifyLayout(
     const alreadyWrapped = content.includes('<SmoothScrollProvider>{children}</SmoothScrollProvider>');
 
     if (!alreadyWrapped) {
-      // Match <body className={...}>{children}</body> regardless of className content.
-      // Supports both layouts:
-      //   - CSS variable: <body className={`${fontSans.variable} antialiased`}>
-      //   - Simple:       <body className={inter.className}>
-      const bodyPattern =
-        /(<body\s+className=\{[\s\S]*?\}\s*>)\s*\{children\}\s*<\/body>/m;
+      // Replace bare {children} with SmoothScrollProvider-wrapped version.
+      // Works regardless of nesting (inside <body>, <ThemeProvider>, etc.)
+      const childrenPattern = /(\s*)\{children\}/m;
       const updated = content.replace(
-        bodyPattern,
-        '$1<SmoothScrollProvider>{children}</SmoothScrollProvider></body>',
+        childrenPattern,
+        '$1<SmoothScrollProvider>{children}</SmoothScrollProvider>',
       );
       if (updated === content) {
         throw new Error(
           `Unable to inject SmoothScrollProvider in ${layoutPath}. ` +
-          `Expected pattern: <body className={...}>{children}</body>`,
+          `Expected pattern: {children}`,
         );
       }
       content = updated;
