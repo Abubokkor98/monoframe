@@ -1,3 +1,17 @@
+## 0.0.1-beta.15 (2026-04-11)
+
+### 🚀 Features
+
+- **shadcn:** integrate dynamic font resolution and theme provider support ([c0e9697](https://github.com/Abubokkor98/mononext/commit/c0e9697))
+
+### 🩹 Fixes
+
+- **ui:** correct Geist font import name in font-map configuration ([8b9582d](https://github.com/Abubokkor98/mononext/commit/8b9582d))
+
+### ❤️ Thank You
+
+- Abubokkor98 @Abubokkor98
+
 ## 0.0.1-beta.14 (2026-04-08)
 
 ### 🚀 Features
