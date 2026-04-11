@@ -608,6 +608,9 @@ export function ThemeProvider({
         baseColor: "neutral",
       }),
     );
+
+    // Restore layout.tsx — shadcn init may have partially modified it before failing
+    await rewriteLayoutAfterShadcn(firstFrontendAppDir, firstFrontendApp.name, fontConfig);
   }
 
   // 6. Write each app's globals.css to import shared design tokens
